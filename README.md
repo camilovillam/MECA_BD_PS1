@@ -1,6 +1,4 @@
-# Repositorio del Problem Set 1 - Big Data and Machine Learning for Applied Economics
-
-MEcA Uniandes 2022-13
+# Repositorio del Problem Set 1 - Big Data and Machine Learning for Applied Economics - MEcA Uniandes 2022-13
 
 Bienvenido al repositorio del `Problem Set 1` resuelto por:
 
