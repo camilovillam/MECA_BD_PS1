@@ -58,10 +58,15 @@ tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
 
 #PRUEBA DE ACTUALIZACIÓN
 
+head(tabla_page1)
+tail(tabla_page1)
 
+
+datosGEIH <- as.data.frame(tabla_page1)
 
 
 # Punto 2: limpieza de datos ----------------------------------------------
+
 
 
 
