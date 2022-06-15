@@ -47,5 +47,5 @@ page1 %>% html_nodes("div[w3-include-html*='pages']")
 # 
 page1 %>% html_nodes("div[w3-include-html*='pages']") %>%  html_attr("w3-include-html")
 
-#Ya sé cuál es la página 
+#Ya sé cuál es la página y la leo
 page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_1.html")
