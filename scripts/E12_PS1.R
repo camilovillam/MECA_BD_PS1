@@ -56,7 +56,7 @@ page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/ge
 # Ahora cargo la tabla
 tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
 
-
+#PRUEBA DE ACTUALIZACIÓN
 
 
 
