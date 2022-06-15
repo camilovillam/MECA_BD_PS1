@@ -1,7 +1,10 @@
 
 #Junio 12 de 2022
 
-#Punto 1 - Prueba Scrapping
+
+
+# Punto 1: adquisición de datos -------------------------------------------
+
 
 
 install.packages("rvest")
@@ -52,3 +55,24 @@ page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/ge
 
 # Ahora cargo la tabla
 tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
+
+
+
+
+
+
+# Punto 2: limpieza de datos ----------------------------------------------
+
+
+
+# Punto 3: modelo ingresos por edad ---------------------------------------
+
+
+
+# Punto 4: modelo brecha de ingresos --------------------------------------
+
+
+
+# Punto 5: modelo de predicción de ingresos -------------------------------
+
+
