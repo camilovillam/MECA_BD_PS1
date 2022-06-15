@@ -1,0 +1,1 @@
+Esta carpeta contiene la versión final del documento del PS1 en formato pdf
