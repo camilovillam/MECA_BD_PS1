@@ -56,13 +56,25 @@ page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/ge
 # Ahora cargo la tabla
 tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
 
-#PRUEBA DE ACTUALIZACIÓN
 
 head(tabla_page1)
 tail(tabla_page1)
 
-
 datosGEIH <- as.data.frame(tabla_page1)
+
+#número de observaciones
+nrow(datosGEIH)
+
+
+#Bucle para leer las demás páginas:
+
+for (i 2:10)
+{
+  page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_1.html")
+  tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
+  datosGEIH <- rbind()
+  nrow(datosGEIH)
+}
 
 
 # Punto 2: limpieza de datos ----------------------------------------------
