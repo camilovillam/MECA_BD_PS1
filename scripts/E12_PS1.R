@@ -62,19 +62,72 @@ tail(tabla_page1)
 
 datosGEIH <- as.data.frame(tabla_page1)
 
-#nÃºmero de observaciones
+#Número de observaciones
+nrow(datosGEIH)
+
+#Ensayo para la página 2
+
+page2 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_2.html")
+tabla_page2 <- page2 %>% html_nodes("table") %>% html_table()
+tabla_page2  <- as.data.frame(tabla_page2)
+datosGEIH <- rbind(datosGEIH,tabla_page2)
 nrow(datosGEIH)
 
 
-#Bucle para leer las demÃ¡s pÃ¡ginas:
+#Ensayo para la página 3
 
-for (i 2:10)
+i <- 3
+
+#Esta línea no funciona:
+
+eval(as.name(paste0("page",i))) <- read_html(
+  paste0("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_",i,".html")
+  )
+
+
+#Como no funciona con <- , se asigna con "assign":
+
+assign(paste0("page",i),read_html(paste0("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_",i,".html")))
+
+#Lo anterior funciona, pero es una sintaxis compleja. Habría que hacer lo mismo para las demás líneas.
+# ¿Qué tal con una lista?
+
+
+
+#Inicializo una lista del tamaño que necesito, esto lo puedo mejorar después
+
+page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
+tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
+
+page_list[[i]] <- read_html(paste0("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_",i,".html"))
+tabla_page_list[[i]] <- page_list[[i]] %>% html_nodes("table") %>% html_table()
+tabla_page_list[[i]] <- as.data.frame(tabla_page_list[[i]])
+datosGEIH <- rbind(datosGEIH,tabla_page_list[[i]])
+nrow(datosGEIH)
+
+
+
+#Bucle para leer las demás páginas:
+
+for (i in 4:10)
 {
-  page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_1.html")
-  tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
-  datosGEIH <- rbind()
+  page_list[[i]] <- read_html(paste0("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_",i,".html"))
+  tabla_page_list[[i]] <- page_list[[i]] %>% html_nodes("table") %>% html_table()
+  tabla_page_list[[i]] <- as.data.frame(tabla_page_list[[i]])
+  datosGEIH <- rbind(datosGEIH,tabla_page_list[[i]])
   nrow(datosGEIH)
+  
 }
+
+nrow(datosGEIH)
+
+#Control para revisar si sí pegó bien los datos
+max(datosGEIH$Var.1)
+
+#Parece que no los pegó bien; revisar!
+
+
+saveRDS(datosGEIH,"datosGEIH_complete.rds")
 
 
 # Punto 2: limpieza de datos ----------------------------------------------
