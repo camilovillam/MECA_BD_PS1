@@ -12,6 +12,7 @@ install.packages("rvest")
 #Usar rvest / cargar librería
 
 library(rvest)
+library(tidyverse)
 
 # Cargar la página inicial del taller
 # Esto crea la variable page1
@@ -30,7 +31,7 @@ page1
 page1 %>% html_nodes("table > thead > tr > th")
 
 #El resultado es que no hay tablas :( 
-#Se eencuentr en el código fuente de la página web que la tabla es llamada desde otra página web
+#Se eecuentra en el código fuente de la página web que la tabla es llamada desde otra página web
 #La tabla se carga desde un `div` usando `w3-include-html`.
 
 #Hacer web scrapping te ese div.
@@ -57,11 +58,130 @@ page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/ge
 tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
 
 
+head(tabla_page1)
+tail(tabla_page1)
+
+tabla_page1 <- as.data.frame(tabla_page1)
+
+datosGEIH <- tabla_page1
+
+# #Tabla de control: una tabla en donde vamos contando los números de filas
+# y la suma de la edad de los individuos de la respectiva tabla, a modo de control.
+# También se saca esta información para la tabla agregada que se va creando en cada iteración.
+# Las columnas de control 
+# Si las columnas de control son igual a cero, el proceso está bien (?).
+
+data_control <- matrix(1:70,nrow=10,ncol=7)
+colnames(data_control) <- c("Page","nrow_page","nrow_aggr","nrow_test","sum_age_page","sum_age_aggr","sum_age_test")
+
+data_control[1,1] <- 1
+data_control[1,2] <- nrow(tabla_page1)
+data_control[1,3] <- nrow(datosGEIH)
+data_control[1,4] <- 0
+data_control[1,5] <- sum(tabla_page1$age)
+data_control[1,6] <- sum(datosGEIH$age)
+data_control[1,7] <- 0
 
 
+#Para cargar las demás páginas se utiliza un bucle For y se va almacenando la info en listas:
+
+#Inicializo una lista del tamaño que necesito (esto lo puedo mejorar después)
+
+page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
+tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
+
+
+
+#Bucle para leer las demás páginas:
+
+for (i in 2:10)
+{
+  page_list[[i]] <- read_html(paste0("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_",i,".html"))
+  tabla_page_list[[i]] <- page_list[[i]] %>% html_nodes("table") %>% html_table()
+  tabla_page_list[[i]] <- as.data.frame(tabla_page_list[[i]])
+
+  datosGEIH <- rbind(datosGEIH,tabla_page_list[[i]])
+  
+  #Revisión de la consulta: tabla de control
+  data_control[i,1] <- i
+  data_control[i,2] <- nrow(tabla_page_list[[i]])
+  data_control[i,3] <- nrow(datosGEIH)
+  data_control[i,4] <- (data_control[i-1,3]+data_control[i,2])-data_control[i,3]
+  data_control[i,5] <- sum(tabla_page_list[[i]]$age)
+  data_control[i,6] <- sum(datosGEIH$age)
+  data_control[i,7] <- (data_control[i-1,6]+data_control[i,5])-data_control[i,6]
+  
+  i
+  }
+
+nrow(datosGEIH)
+max(datosGEIH$Var.1)
+sum(datosGEIH$age)
+
+
+#PROCESO MANUAL, PARA COMPARAR:
+
+page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_1.html")
+tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
+tabla_page1  <- as.data.frame(tabla_page1)
+datosGEIH_m <- tabla_page1
+
+page2 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_2.html")
+tabla_page2 <- page2 %>% html_nodes("table") %>% html_table()
+tabla_page2  <- as.data.frame(tabla_page2)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page2)
+
+page3 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_3.html")
+tabla_page3 <- page3 %>% html_nodes("table") %>% html_table()
+tabla_page3  <- as.data.frame(tabla_page3)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page3)
+
+page4 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_4.html")
+tabla_page4 <- page4 %>% html_nodes("table") %>% html_table()
+tabla_page4  <- as.data.frame(tabla_page4)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page4)
+
+page5 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_5.html")
+tabla_page5 <- page5 %>% html_nodes("table") %>% html_table()
+tabla_page5  <- as.data.frame(tabla_page5)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page5)
+
+page6 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_6.html")
+tabla_page6 <- page6 %>% html_nodes("table") %>% html_table()
+tabla_page6  <- as.data.frame(tabla_page6)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page6)
+
+page7 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_7.html")
+tabla_page7 <- page7 %>% html_nodes("table") %>% html_table()
+tabla_page7  <- as.data.frame(tabla_page7)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page7)
+
+page8 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_8.html")
+tabla_page8 <- page8 %>% html_nodes("table") %>% html_table()
+tabla_page8  <- as.data.frame(tabla_page8)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page8)
+
+page9 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_9.html")
+tabla_page9 <- page9 %>% html_nodes("table") %>% html_table()
+tabla_page9  <- as.data.frame(tabla_page9)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page9)
+
+page10 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_10.html")
+tabla_page10 <- page10 %>% html_nodes("table") %>% html_table()
+tabla_page10  <- as.data.frame(tabla_page10)
+datosGEIH_m <- rbind(datosGEIH_m,tabla_page10)
+
+#Comparo si la tabla generada manualmente y la del For son iguales
+
+all_equal(datosGEIH, datosGEIH_m)
+
+#Guardo la base de datos en un archivo .rds
+setwd("~/GitHub/MECA_BD_PS1")
+saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 
 # Punto 2: limpieza de datos ----------------------------------------------
+
 
 
 
