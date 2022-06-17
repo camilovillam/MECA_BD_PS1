@@ -85,11 +85,15 @@ data_control[1,7] <- 0
 
 #Para cargar las demás páginas se utiliza un bucle For y se va almacenando la info en listas:
 
-#Inicializo una lista del tamaño que necesito (esto lo puedo mejorar después)
+#Inicializamos una lista del tamaño que necesito 
 
-page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
-tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
+# (esto lo puedo mejorar después)
 
+# page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
+# tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
+
+page_list <- vector("list",10)
+tabla_page_list <- vector("list",10)
 
 
 #Bucle para leer las demás páginas:
@@ -119,61 +123,68 @@ max(datosGEIH$Var.1)
 sum(datosGEIH$age)
 
 
-#PROCESO MANUAL, PARA COMPARAR:
+#Proceso de lectura de las 10 páginas "manual", uno a uno. Con fines comparativos y de control:
 
-page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_1.html")
-tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
-tabla_page1  <- as.data.frame(tabla_page1)
-datosGEIH_m <- tabla_page1
-
-page2 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_2.html")
-tabla_page2 <- page2 %>% html_nodes("table") %>% html_table()
-tabla_page2  <- as.data.frame(tabla_page2)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page2)
-
-page3 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_3.html")
-tabla_page3 <- page3 %>% html_nodes("table") %>% html_table()
-tabla_page3  <- as.data.frame(tabla_page3)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page3)
-
-page4 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_4.html")
-tabla_page4 <- page4 %>% html_nodes("table") %>% html_table()
-tabla_page4  <- as.data.frame(tabla_page4)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page4)
-
-page5 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_5.html")
-tabla_page5 <- page5 %>% html_nodes("table") %>% html_table()
-tabla_page5  <- as.data.frame(tabla_page5)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page5)
-
-page6 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_6.html")
-tabla_page6 <- page6 %>% html_nodes("table") %>% html_table()
-tabla_page6  <- as.data.frame(tabla_page6)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page6)
-
-page7 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_7.html")
-tabla_page7 <- page7 %>% html_nodes("table") %>% html_table()
-tabla_page7  <- as.data.frame(tabla_page7)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page7)
-
-page8 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_8.html")
-tabla_page8 <- page8 %>% html_nodes("table") %>% html_table()
-tabla_page8  <- as.data.frame(tabla_page8)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page8)
-
-page9 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_9.html")
-tabla_page9 <- page9 %>% html_nodes("table") %>% html_table()
-tabla_page9  <- as.data.frame(tabla_page9)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page9)
-
-page10 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_10.html")
-tabla_page10 <- page10 %>% html_nodes("table") %>% html_table()
-tabla_page10  <- as.data.frame(tabla_page10)
-datosGEIH_m <- rbind(datosGEIH_m,tabla_page10)
+# page1 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_1.html")
+# tabla_page1 <- page1 %>% html_nodes("table") %>% html_table()
+# tabla_page1  <- as.data.frame(tabla_page1)
+# datosGEIH_m <- tabla_page1
+# 
+# page2 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_2.html")
+# tabla_page2 <- page2 %>% html_nodes("table") %>% html_table()
+# tabla_page2  <- as.data.frame(tabla_page2)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page2)
+# 
+# page3 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_3.html")
+# tabla_page3 <- page3 %>% html_nodes("table") %>% html_table()
+# tabla_page3  <- as.data.frame(tabla_page3)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page3)
+# 
+# page4 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_4.html")
+# tabla_page4 <- page4 %>% html_nodes("table") %>% html_table()
+# tabla_page4  <- as.data.frame(tabla_page4)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page4)
+# 
+# page5 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_5.html")
+# tabla_page5 <- page5 %>% html_nodes("table") %>% html_table()
+# tabla_page5  <- as.data.frame(tabla_page5)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page5)
+# 
+# page6 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_6.html")
+# tabla_page6 <- page6 %>% html_nodes("table") %>% html_table()
+# tabla_page6  <- as.data.frame(tabla_page6)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page6)
+# 
+# page7 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_7.html")
+# tabla_page7 <- page7 %>% html_nodes("table") %>% html_table()
+# tabla_page7  <- as.data.frame(tabla_page7)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page7)
+# 
+# page8 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_8.html")
+# tabla_page8 <- page8 %>% html_nodes("table") %>% html_table()
+# tabla_page8  <- as.data.frame(tabla_page8)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page8)
+# 
+# page9 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_9.html")
+# tabla_page9 <- page9 %>% html_nodes("table") %>% html_table()
+# tabla_page9  <- as.data.frame(tabla_page9)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page9)
+# 
+# page10 <- read_html("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_10.html")
+# tabla_page10 <- page10 %>% html_nodes("table") %>% html_table()
+# tabla_page10  <- as.data.frame(tabla_page10)
+# datosGEIH_m <- rbind(datosGEIH_m,tabla_page10)
 
 #Comparo si la tabla generada manualmente y la del For son iguales
 
-all_equal(datosGEIH, datosGEIH_m)
+# all_equal(datosGEIH, datosGEIH_m)
+
+
+#Elimino las variables que no necesito
+rm(list=ls(pattern="page"))
+rm(data_control)
+# rm(datosGEIH_m)
+
 
 #Guardo la base de datos en un archivo .rds
 setwd("~/GitHub/MECA_BD_PS1")
