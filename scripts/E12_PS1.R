@@ -205,7 +205,21 @@ datosGEIH_P4 <- data.frame(datosGEIH)
 datosGEIH_P4$ln_ing <- log(datosGEIH_P4$ingtotob)
 
 head(datosGEIH_P4)
- 
+
+#Se crea la variable mujer a partir de la variable sex y se deja en la misma tabla
+
+library(dplyr) #se llama esta libreria
+
+# Adding column based on other column:
+datosGEIH_P4 <- datosGEIH_P4 %>%
+  mutate(mujer = case_when(
+    sex == 0 ~ 1,
+    sex == 1 ~ 0
+  ))
+
+datosGEIH_P4 %>% select (sex,mujer) 
+
+#
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
