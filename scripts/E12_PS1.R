@@ -210,7 +210,7 @@ head(datosGEIH_P4)
 
 library(dplyr) #se llama esta libreria
 
-# Adding column based on other column:
+# Se crea una columna nueva basada en otra variable de otra columna
 datosGEIH_P4 <- datosGEIH_P4 %>%
   mutate(mujer = case_when(
     sex == 0 ~ 1,
@@ -235,7 +235,36 @@ datosGEIH_P4 <- datosGEIH_P4[is.finite(datosGEIH_P4$ln_ing), ]
 regP4_1<-lm(ln_ing~mujer,data=datosGEIH_P4)
 summary(regP4_1)
 
+#Siguiente inciso: Estimación y grafica del perfil de edad versus ingresos pronosticado por género
 
+#Se estima primero la regresión del logaritmo de ingreso
+#para eso se crea la variable de edad al cuadrado y luego se corre la regresión
+
+datosGEIH_P4 <- datosGEIH_P4 %>% mutate(age2 = age*age)
+
+#Reviso los valores de las variables antes de correr la regresión
+datosGEIH_P4 %>% select (age,age2)
+
+#Se prueban dos regresiones
+regP4_2<-lm(ln_ing~mujer+age, data=datosGEIH_P4)
+summary(regP4_2)
+
+regP4_3<-lm(ln_ing~mujer+age+age2, data=datosGEIH_P4)
+summary(regP4_3)
+
+#Se utiliza stargazer para viasualizar las regresiones
+install.packages("stargazer")
+require("stargazer")
+stargazer(regP4_1,regP4_2,regP4_3,type="text")
+
+#Se predice y grafica con la regresión regP4_3
+
+library(ggplot2) 
+#plot predicted vs. actual values
+ggplot(datosGEIH_P4, aes(x=predict(regP4_3), y=ln_ing)) + 
+  geom_point() +
+  geom_abline(intercept=0, slope=1) +
+  labs(x='Predicted Values', y='Actual Values', title='Predicted vs. Actual Values')
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
