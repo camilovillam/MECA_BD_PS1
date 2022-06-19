@@ -217,9 +217,25 @@ datosGEIH_P4 <- datosGEIH_P4 %>%
     sex == 1 ~ 0
   ))
 
+#se verifica la variable mediante comparación
 datosGEIH_P4 %>% select (sex,mujer) 
 
-#
+#se hace la pimera regresión del punto 4
+
+#Reviso los valores de las variables antes de correr la regresión
+datosGEIH_P4 %>% select (ln_ing,mujer)
+
+#NOTA: Se eliminan los NA de las variables de la regresión (esto porque aun nos falta terminar el P2)
+datosGEIH_P4 <- datosGEIH_P4 %>% drop_na(mujer,ln_ing)
+
+#NOTA: Se eliminan las filas  que tienen Inf de la variable ln_ing (revisar cuando se termine el P2)
+datosGEIH_P4 <- datosGEIH_P4[is.finite(datosGEIH_P4$ln_ing), ] 
+
+#Se corre la regresión
+regP4_1<-lm(ln_ing~mujer,data=datosGEIH_P4)
+summary(regP4_1)
+
+
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
