@@ -191,7 +191,21 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
-#PRUEBA PARA UNIR RAMAS DESACTUALIZADAS 
+
+#Se toma la tabla llamada datosGEIH y se crea una copia por si acaso
+
+datosGEIH_P4 <- data.frame(datosGEIH)
+
+#se toma la variable ingreso total observado (ingtotob) como la variable ingreso
+
+#Se convierte la variable ingreso (ingtotob) en logaritmo y se guarda en la misma tabla
+#El nombre de la variable ingreso en logaritmo es ln_ing
+#https://www.programmingr.com/tutorial/natural-log-in-r/
+
+datosGEIH_P4$ln_ing <- log(datosGEIH_P4$ingtotob)
+
+head(datosGEIH_P4)
+ 
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
