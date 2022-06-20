@@ -289,8 +289,15 @@ b4<-coefs[5]
 peak_age_m <- -(b2+b4)/(2*b3) #peak age si es mujer
 peak_age_h <- -(b2)/(2*b3) #peak age si es hombre
 
+peak_age_m
+peak_age_h
+
+# CI=[coef−1.96×SE,coef+1.96×SE]
+
 #boot(datosGEIH_P4, peak_age, R = 1000)
-  
+results_m <- boot(datosGEIH_P4, peak_age_m,R=1000)
+results_m
+
   
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
