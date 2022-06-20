@@ -273,8 +273,9 @@ ggplot(datosGEIH_P4, aes(x=predict(regP4_3), y=ln_ing,color=mujer)) +
 
 ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_3),color=mujer)) + 
   geom_point() +
-  labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. ln ingreso estimado')
+  labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
 
+#Siguiente inciso: usar bootstrap para calcular errores estandar e intervalos de confianza
 
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
