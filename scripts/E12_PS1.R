@@ -261,10 +261,21 @@ stargazer(regP4_1,regP4_2,regP4_3,type="text")
 
 library(ggplot2) 
 #plot predicted vs. actual values
-ggplot(datosGEIH_P4, aes(x=predict(regP4_3), y=ln_ing)) + 
+ggplot(datosGEIH_P4, aes(x=predict(regP4_3), y=ln_ing,color=mujer)) + 
   geom_point() +
-  geom_abline(intercept=0, slope=1) +
+  geom_abline(intercept = c(12.2530, 12.4880),#ojo con estos valores.  Deben ajustarse si se cambia de base de datos 
+              slope = c(0.068, 0.068), #ojo con estos valores.  Deben ajustarse si se cambia de base de datos
+              color=c("red", "blue")) +
   labs(x='Predicted Values', y='Actual Values', title='Predicted vs. Actual Values')
+
+#plot predicted(ln_ing) vs. age
+#Esta si es la gráfica que se está pidiendo en el P4.
+
+ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_3),color=mujer)) + 
+  geom_point() +
+  labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. ln ingreso estimado')
+
+
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
