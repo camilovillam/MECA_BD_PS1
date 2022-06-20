@@ -97,14 +97,20 @@ data_control[1,7] <- 0
 #mejorar después) Nota de Camilo: esto ya lo había corregido en otra versión del
 #código! (último commit del 1? Revisar)
 
-page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
-tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
+# page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
+# tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
 
 
 #Parece que se me perdió el código en el que inicializaba estas listas de manera
 #correcta (usando "vector") :(
 
 
+#Ya lo encontré, estaba en el Branch Punto 2 - Camilo. Ya hice Merge con Main.
+#¿Esto irá a generar conflicto después?
+  
+  
+page_list <- vector("list",10)
+tabla_page_list <- vector("list",10)
 
 
 
@@ -219,34 +225,141 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 # Cargar base de datos
 
 
+setwd("~/GitHub/MECA_BD_PS1")
+datosGEIH_P5 <-readRDS("./stores/datosGEIH_complete.rds")
+
+
+#Por ahora, elimino todos los NA en Ingtotob
+#Luego se debe hacer un tratamiento mejor
+
+nrow(datosGEIH_P5)
+datosGEIH_P5 <- subset(datosGEIH_P5, !is.na(ingtotob))
+nrow(datosGEIH_P5)
+
+
+datosGEIH_P5$ln_ing <- log(datosGEIH_P5$ingtotob)
+
 
 # Enunciado:
 
 
 # a.
 # Split the sample into two samples: a training (70%) and a test (30%) sample.
-
 # Don’t forget to set a seed 
 # (in R, set.seed(10101), where 10101 is the seed.)
+
+
+set.seed(10101) #sets a seed
+
+datosGEIH_P5 <- datosGEIH_P5 %>%
+  mutate(test_dataset= as.logical(1:nrow(datosGEIH_P5) %in%
+                               sample(nrow(datosGEIH_P5),
+                                      nrow(datosGEIH_P5)*.3))
+  )
+
+summary(datosGEIH_P5$test_dataset)
+mean(datosGEIH_P5$test_dataset)
+
+test <- datosGEIH_P5[datosGEIH_P5$test_dataset==T,]
+training <- datosGEIH_P5[datosGEIH_P5$test_dataset==F,]
+
 
 
 # i. Estimate a model that only includes a constant. This will be the benchmark.
 
 
+model1<-lm(ingtotob~1,data=training)
+summary(model1)
+stargazer(model1,type="text")
+
+coef(model1)
+mean(training$ingtotob) #aún falta tratar los NA
+
+
+#Se predice el modelo:
+test$model1 <- predict(model1,newdata = test)
+
+#Se calcula el MSE:
+
+#Guardo los MSE de los diferentes modelos en una matriz,
+#para compararlos al final.
+
+MSE_modelos <- matrix(rep(0,30),nrow=10,ncol=3)
+colnames(MSE_modelos) <- c("Modelo","MSE","MSE_CV_5-fold")
+
+MSE_modelos[1,1]=1
+MSE_modelos[1,2] <- with(test,mean((ingtotob-model1)^2))
+
+
+
 # ii. Estimate again your previous models
 
+#Aquí es necesario tomar los modelos previos. ¿Cuáles son?
 
-# iii. In the previous sections, the estimated models haddifferent
+#Ejemplo: modelo sencillo con solo edad
+
+
+
+#MODELO 2:
+model2<-lm(ingtotob~age,data=training)
+
+#Se predice el modelo:
+test$model2 <- predict(model2,newdata = test)
+
+#Se calcula el MSE:
+
+MSE_modelos[2,1]=2
+MSE_modelos[2,2] <- with(test,mean((ingtotob-model2)^2))
+
+stargazer(model1,model2,type="text")
+
+
+#Para cada modelo, se sigue el mismo procedimiento anterior.
+
+#MODELO N:
+modelN<-lm(ingtotob~1,data=training)
+
+#Se predice el modelo:
+test$modelN <- predict(modelN,newdata = test)
+
+#Se calcula el MSE:
+
+MSE_modelos[N,1]=N
+MSE_modelos[N,2] <- with(test,mean((ingtotob-modelN)^2))
+
+
+
+
+# iii. In the previous sections, the estimated models had different
 # transformations of the dependent variable. At this point, explore other
 # transformations of your independent variables also. For example, you can
 # include polynomial terms of certain controls or interactions of these. Try at
 # least five (5) models that are increasing in complexity.
 
+#Igual a la sección anterior:
+
+#MODELO N:
+modelN<-lm(ingtotob~1,data=training)
+
+#Se predice el modelo:
+test$modelN <- predict(modelN,newdata = test)
+
+#Se calcula el MSE:
+
+MSE_modelos[N,1]=N
+MSE_modelos[N,2] <- with(test,mean((ingtotob-modelN)^2))
 
 
 # iv. Report and compare the average prediction error of all the models that
 # you estimated before. Discuss the model with the lowest average prediction
 # error.
+
+#Presenta la tabla:
+stargazer(MSE_modelos,type="text")
+
+#Encuentra el número del modelo con el menor MSE:
+which.min(MSE_modelos[,2])
+
 
 
 
@@ -256,12 +369,41 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 # outliers potential people that the DIAN should look into, or are they just
 # the product of a flawed model?
   
+#PENDIENTE! VER CLASE Y CÓDIGO DE LEVERAGE!
 
 
 
 #b. Repeat the previous point but use K-fold cross-validation.
 #Comment on similarities/differences of using this approach
 
+#Se debe repetir para todos los modelos de regresión del punto anterior...
+
+
+#Cross-validation, model 1:
+model1_CV_K <- train(ingtotob ~ .,
+                     data = datosGEIH_P5,
+                     trControl = trainControl(method = "cv", number = 5),
+                     method = "null")
+
+#Guardo el MSE en la tabla (lo debo elevar porque aquí calcula RMSE)
+MSE_modelos[1,3] <- model1_CV_K$results$RMSE^2
+
+
+#Cross-validation, model 2:
+model2_CV_K <- train(ingtotob ~ age,
+                data = datosGEIH_P5,
+                trControl = trainControl(method = "cv", number = 5),
+                method = "lm")
+
+#Guardo el MSE en la tabla
+MSE_modelos[2,3] <- model2_CV_K$results$RMSE^2
+
+
+#Cross-validation, model 2:
+model2_CV_K <- train(ingtotob ~ age,
+                     data = datosGEIH_P5,
+                     trControl = trainControl(method = "cv", number = 5),
+                     method = "lm")
 
 
 #c. LOOCV. With your preferred predicted model (the one with the lowest
@@ -279,79 +421,7 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 # leverage statistic
 
 
-
-
-# El siguiente es un código de ejemplo, todavía no es definitivo
-
-reg1<-lm(logwage~schooling,db1)
-reg2<-lm(logwage~schooling+ability,db1)
-
-stargazer(reg1,reg2,type="text")
-
-
-db1<- db1 %>% mutate(yhat_reg1=predict(reg1),
-                     yhat_reg2=predict(reg2))
-
-var(db1$yhat_reg1)
-var(db1$yhat_reg2)
-
-
-reg3<-lm(logwage~schooling,db2)
-reg4<-lm(logwage~schooling+ability,db2)
-stargazer(reg3,reg4,type="text")
-
-db2$yhat_reg3<-predict(reg3)
-db2$yhat_reg4<-predict(reg4)
-var(db2$yhat_reg3)
-
-
-data(matchdata) #loads the data
-
-set.seed(101010) #sets a seed
-
-matchdata <- matchdata %>%
-  mutate(price=exp(lnprice),
-         holdout= as.logical(1:nrow(matchdata) %in%
-                               sample(nrow(matchdata),
-                                      nrow(matchdata)*.2))
-         )
-
-test<-matchdata[matchdata$holdout==T,]
-train<-matchdata[matchdata$holdout==F,]
-
-#Naive approach
-
-model1<-lm(price~1,data=train)
-summary(model1)
-
-
-coef(model1)
-
-test$model1<-predict(model1,newdata = test)
-with(test,mean((price-model1)^2))
-
-
-#that was Starting point, now improve it:
-
-model2<-lm(price~bedrooms,data=train)
-test$model2<-predict(model2,newdata = test)
-with(test,mean((price-model2)^2))
-
-model3<-lm(price~bedrooms+bathrooms+centair+fireplace+brick,data=train)
-test$model3<-predict(model3,newdata = test)
-with(test,mean((price-model3)^2))
-
-
-?predict
-
-model4<-lm(price~bedrooms+bathrooms+centair+fireplace+brick+
-             lnland+lnbldg+rooms+garage1+garage2+dcbd+rr+
-             yrbuilt+factor(carea)+latitude+longitude,data=train)
-test$model4<-predict(model4,newdata = test)
-with(test,mean((price-model4)^2))
-
-
-#LOOCV:
+#PUNTO C, PENDIENTE!
 
 
 
