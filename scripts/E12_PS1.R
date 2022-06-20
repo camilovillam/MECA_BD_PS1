@@ -245,39 +245,53 @@ datosGEIH_P4 <- datosGEIH_P4 %>% mutate(age2 = age*age)
 #Reviso los valores de las variables antes de correr la regresión
 datosGEIH_P4 %>% select (age,age2)
 
-#Se prueban dos regresiones
+#Se prueban  regresiones
 regP4_2<-lm(ln_ing~mujer+age, data=datosGEIH_P4)
-summary(regP4_2)
-
 regP4_3<-lm(ln_ing~mujer+age+age2, data=datosGEIH_P4)
-summary(regP4_3)
+regP4_4<-lm(ln_ing~mujer+age+age2+(mujer*age), data=datosGEIH_P4)
 
 #Se utiliza stargazer para viasualizar las regresiones
 install.packages("stargazer")
 require("stargazer")
-stargazer(regP4_1,regP4_2,regP4_3,type="text")
+stargazer(regP4_1,regP4_2,regP4_3,regP4_4,type="text")
 
-#Se predice y grafica con la regresión regP4_3
+#Se predice y grafica con la regresión regP4_4
 
-library(ggplot2) 
-#plot predicted vs. actual values
-ggplot(datosGEIH_P4, aes(x=predict(regP4_3), y=ln_ing,color=mujer)) + 
-  geom_point() +
-  geom_abline(intercept = c(12.2530, 12.4880),#ojo con estos valores.  Deben ajustarse si se cambia de base de datos 
-              slope = c(0.068, 0.068), #ojo con estos valores.  Deben ajustarse si se cambia de base de datos
-              color=c("red", "blue")) +
-  labs(x='Predicted Values', y='Actual Values', title='Predicted vs. Actual Values')
+library(ggplot2)
 
 #plot predicted(ln_ing) vs. age
-#Esta si es la gráfica que se está pidiendo en el P4.
 
-ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_3),color=mujer)) + 
+ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) + 
   geom_point() +
   labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
 
 #Siguiente inciso: usar bootstrap para calcular errores estandar e intervalos de confianza
+#del "peak age" por genero
 
+#https://towardsdatascience.com/a-practical-guide-to-bootstrap-with-r-examples-bd975ec6dcea
 
+install.packages('boot',dep=TRUE)
+library(boot)
+
+regP4_4 #se llama la regresión de interés que ya está definida previamente
+coefs<-regP4_4$coef #se usa la función coef para extraer los coeficientes de la regresión
+coefs
+
+#se asignan los coeficientes calculados
+b0<-coefs[1]
+b1<-coefs[2]
+b2<-coefs[3]
+b3<-coefs[4]
+b4<-coefs[5]
+
+#Se define la función que calcula el "peak age" 
+
+peak_age_m <- -(b2+b4)/(2*b3) #peak age si es mujer
+peak_age_h <- -(b2)/(2*b3) #peak age si es hombre
+
+#boot(datosGEIH_P4, peak_age, R = 1000)
+  
+  
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
 
