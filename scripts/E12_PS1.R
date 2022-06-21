@@ -186,8 +186,56 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 
 # Punto 3: modelo ingresos por edad ---------------------------------------
+##prueba para iniciar
+GIH<- import("https://gitlab.com/Lectures-R/bd-meca-2022-summer/lecture-01/-/raw/main/data/GEIH_sample1.Rds")
+browseURL("https://ignaciomsarmiento.github.io/GEIH2018_sample/dictionary.html")
+summary("y_ingLab_m, na.rm=T")
+summary(GIH$y_ingLab_m)
+GIH<-GIH %>% mutate (age2= age*age)
+age2
 
+a<-age^2
+reg_1<-lm(y_ingLab_m~age+age2,GIH)
+summary(reg1)
+require("tidiverse")
+GIH<-data.frame(age=runif(30,18,80))
+GIH<- GIH %>% mutate(age2=age^2,
+                     y_ingLab_m=rnorm(30,mean=12+0.06*age-0.001*age2))                
+reg_1<-lm(y_ingLab_m~age+age2,GIH)
+ggplot(GIH , mapping = aes(x = age , y = predict(reg_1))) +
+  geom_point(col = "red" , size = 0.5)
 
+#########
+
+install.packages("boot", dep=TRUE)
+library(boot)
+
+plot(hist(eta_reg1))
+mean(eta_reg1)
+reg_1
+coefs<-reg_1$coef
+coefs
+b0<-coefs[0]
+b1<-coefs[1]
+b2<-coefs[2]
+
+peak_age_a<-b1/2*(b2)
+peak_age_a
+
+results<-boot(GIH, peak_age_a, R=1000)
+
+eta_mod_f<-function(GIH,index,
+                    age_bar=mean(GIH$age)
+                    age2_bar=mean(GIH$age2)){
+  f<-lm(y_ingLab_m~age+age2,GIH,subset=index)
+  coefs<-f$coefficients
+  b2<-coefs[2]
+  b3<-coefs[3]
+  elastpt<-b2+2*b3*age_bar+b3*age2_bar
+  return(elastpt)
+}
+
+eta_mod_f(GIH, 1:n)
 
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
