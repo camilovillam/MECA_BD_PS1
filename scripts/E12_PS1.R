@@ -364,6 +364,14 @@ regP4_5<-lm(ln_ing~mujer+age+age2+(mujer*age)+factor(p6210)+factor(oficio), data
 summary(regP4_5)
 stargazer(regP4_5,type="text")
 
+#aplicación teorema FWL(Frisch-Waugh-Lovell)
+library(dplyr)
+datosGEIH_P4 <- datosGEIH_P4 %>% mutate(res_y_e=lm(ln_ing~mujer,datosGEIH_P4)$residuals,
+                                        res_x_e=lm(age~mujer,datosGEIH_P4)$residuals,
+                                        )
+regP4_6<-lm(res_y_e~res_x_e,datosGEIH_P4)
+stargazer(regP4_5,regP4_6,type="text")
+
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
 
