@@ -351,6 +351,19 @@ peak_age_h
 IC_inf_h
 IC_sup_h
 
+#Siguiente inciso:  Equal Pay for Equal Work?
+
+#Estimar la brecha condicional incorporando variables de control
+
+#primero se debe formular la regresión con dicha variables de control
+#se utiliza la función factor para crear variables dicotoma de cada categoría 
+#se toman como variables control: p6210 que indican el nivel de educación
+#y la variable oficio 
+
+regP4_5<-lm(ln_ing~mujer+age+age2+(mujer*age)+factor(p6210)+factor(oficio), data=datosGEIH_P4)
+summary(regP4_5)
+stargazer(regP4_5,type="text")
+
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
 
