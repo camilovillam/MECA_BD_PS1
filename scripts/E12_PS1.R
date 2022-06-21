@@ -292,13 +292,65 @@ peak_age_h <- -(b2)/(2*b3) #peak age si es hombre
 peak_age_m
 peak_age_h
 
-# CI=[coef−1.96×SE,coef+1.96×SE]
+#Se aplica el bootstrap para identificar el error estandar del peak age si es mujer
+peakage_m.fn<-function(datosGEIH_P4,index){
+  
+  f<-lm(regP4_4,datosGEIH_P4, subset = index)
+  coefs<-f$coef#se usa la función coef para extraer los coeficientes de la regresión
+  b0<-coefs[1]#se asignan los coeficientes calculados
+  b1<-coefs[2]
+  b2<-coefs[3]
+  b3<-coefs[4]
+  b4<-coefs[5]
+  peak_age_m <- -(b2+b4)/(2*b3) #peak age si es mujer
+  
+  return(peak_age_m)
+}
 
-#boot(datosGEIH_P4, peak_age, R = 1000)
-results_m <- boot(datosGEIH_P4, peak_age_m,R=1000)
+results_m <- boot(datosGEIH_P4, peakage_m.fn,R=1000)
 results_m
 
+#Se calcula el interlvalo de confianza para el peak age si es mujer
+# CI=[coef−1.96×SE,coef+1.96×SE]
+#ojo con el error estándar, se debe cambiar si ajustamos la regresión o la base de datos
+IC_inf_m <- peak_age_m - 1.96*0.5533107 #límite inferior del intervalo
+IC_sup_m <- peak_age_m + 1.96*0.5533107 #límite superior del intervalo
+
+#Se aplica el bootstrap para identificar error estandar del peak age si es hombre
+peakage_h.fn<-function(datosGEIH_P4,index){
   
+  f<-lm(regP4_4,datosGEIH_P4, subset = index)
+  coefs<-f$coef#se usa la función coef para extraer los coeficientes de la regresión
+  b0<-coefs[1]#se asignan los coeficientes calculados
+  b1<-coefs[2]
+  b2<-coefs[3]
+  b3<-coefs[4]
+  b4<-coefs[5]
+  peak_age_h <- -(b2)/(2*b3) #peak age si es hombre
+
+  return(peak_age_h)
+}
+
+results_h <- boot(datosGEIH_P4, peakage_h.fn,R=1000)
+results_h
+
+#Se calcula el interlvalo de confianza para el peak age si es hombre
+# CI=[coef−1.96×SE,coef+1.96×SE]
+#ojo con el error estándar, se debe cambiar si ajustamos la regresión o la base de datos
+IC_inf_h <- peak_age_h - 1.96*0.5983215 #límite inferior del intervalo
+IC_sup_h <- peak_age_h + 1.96*0.5983215 #límite superior del intervalo
+
+
+#Se llaman los resultados del intervalo de confianza del peak age mujer para escribirlos en el texto
+peak_age_m 
+IC_inf_m
+IC_sup_m
+
+#Se llaman los resultados del intervalo de confianza del peak age hombre para escribirlos en el texto
+peak_age_h 
+IC_inf_h
+IC_sup_h
+
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
 
