@@ -369,7 +369,86 @@ which.min(MSE_modelos[,2])
 # outliers potential people that the DIAN should look into, or are they just
 # the product of a flawed model?
   
-#PENDIENTE! VER CLASE Y CÓDIGO DE LEVERAGE!
+
+#Suponiendo que es el modelo 2 (LUEGO SE AJUSTA AL QUE VERDADERAMENTE FUE)
+
+#Lo calculo pero para el Test sample:
+
+ggplot(test) +
+  geom_point(aes(x=age,y=ingtotob))
+
+model2_test<-lm(ingtotob~age,data=test)
+stargazer(model2,model2_test,type="text")
+
+
+#Calculamos α “a mano”:
+
+# α=u/(1-h_j)
+#   
+#Con h_j es el j-ésimo elemento de la diagonal de Px
+
+#Primero se hace para el primer elemento, con fines ilustrativos.
+#Luego se hace un bucle.
+
+u <- model2_test$residual[1]
+u
+
+h <- lm.influence(model2_test)$hat[1]
+h
+
+alpha <-u /(1-h)
+alpha
+
+rm(u,h,alpha)
+
+#Inicializamos matriz para u,h,alpha con ceros:
+matriz_u_h_alpha <- matrix(rep(0,nrow(test)*5),nrow=nrow(test),ncol=5)
+colnames(matriz_u_h_alpha) <- c("Elemento_j","u","h","alpha","abs_alpha")
+
+for (j in 1:nrow(test)){
+  matriz_u_h_alpha[j,1]=j #Elemento j
+  matriz_u_h_alpha[j,2] <- model2_test$residual[j] #u
+  matriz_u_h_alpha[j,3] <- lm.influence(model2_test)$hat[j] #h
+  matriz_u_h_alpha[j,4] <- matriz_u_h_alpha[j,2]/(1-matriz_u_h_alpha[j,3]) #alpha
+  matriz_u_h_alpha[j,5] <- abs(matriz_u_h_alpha[j,4]) #Valor absoluto alpha
+}
+
+
+head(matriz_u_h_alpha)
+
+leverage <- 
+  matriz_u_h_alpha[order(matriz_u_h_alpha[,5],decreasing=TRUE),]
+
+head(leverage)
+tail(leverage)
+
+#La medida de Leverage es relativa.
+#¿Cómo determinar qué tanto pesan en la regresión?
+#¿Cómo saber si es muy grande o no?
+#Inquietud más conceptual, pendiente por resolver
+
+
+#Guardamos en un nuevo df ingreso y edad de los 100 ingresos más altos de Test
+pot_outliers <- test[leverage[1:100,1],c("ingtotob","age")]
+
+#Una opción mejor es tal vez agregar una nueva columna al df:
+
+test$pot_outliers <- 0
+test$pot_outliers_rank <- 0
+
+#Marcar los primeros 100 con un 1.
+test[leverage[1:100,1],"pot_outliers"] <- 1
+
+#También se puede guardar el "ranking" en la misma matriz de test
+test[leverage[1:nrow(leverage),1],"pot_outliers_rank"] <- 1:nrow(leverage)
+
+
+
+#Graficamos los 100 potenciales outliers en rojo:
+
+ggplot() + 
+  geom_point(data=test,aes(x=age,y=ingtotob),color='black') +
+  geom_point(data=pot_outliers,aes(x=age,y=ingtotob),color='red')
 
 
 
@@ -385,7 +464,7 @@ model1_CV_K <- train(ingtotob ~ .,
                      trControl = trainControl(method = "cv", number = 5),
                      method = "null")
 
-#Guardo el MSE en la tabla (lo debo elevar porque aquí calcula RMSE)
+#Guardamos el MSE en la tabla (lo debo elevar porque aquí calcula RMSE)
 MSE_modelos[1,3] <- model1_CV_K$results$RMSE^2
 
 
