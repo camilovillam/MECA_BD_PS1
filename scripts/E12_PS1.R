@@ -187,16 +187,43 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 # Punto 3: modelo ingresos por edad ---------------------------------------
 ##prueba para iniciar
+
+#Se instalan los paquetes que pueden utlizarse durante el ejercicio
+install.packages("pacman")
+
+require(pacman)
+p_load(rio, 
+       tidyverse, 
+       skimr, 
+       caret,
+       rvest)
+##en este paso se carga la base de datos
 GIH<- import("https://gitlab.com/Lectures-R/bd-meca-2022-summer/lecture-01/-/raw/main/data/GEIH_sample1.Rds")
 browseURL("https://ignaciomsarmiento.github.io/GEIH2018_sample/dictionary.html")
+
+##ahora se hace una descripción del contenido de la base de datos y de la variable y_inglab (ingreso laboral mensual, incluidos propinas y comisiones) 
 summary("y_ingLab_m, na.rm=T")
 summary(GIH$y_ingLab_m)
+
+##resultado: (se pone una parcial, mientras se hace el punto 2) la variable ing:lab cuenta con un mínimo de 40.000 y un valor máximo de ingreso de 40.000.000. 
+#De igual manera, cuenta con una mediana de 983140; es decir, es el valor que se encuentra en la mitad de los datos muestrales. Además, se cuenta conuna media de 1547069; es decir, una persona
+#en promedio gana 1547069 en Colombia. 
+
+##se crea una nueva variable, sin eliminar las demás, llamada age2, que corresponde a la variable edad elevada al cuadrado.
+#Es importante aclarar que esta variable se convierte en exponencial para explicar el comportamiento del ingreso respecto de la edad; es decir,
+#de acuerdo con la teoría económica laboral, una persona en la medida en que crece, adquiere no solo otros estudios académicos, sino una experiencia laboral, lo que le permite obtener un mayor ingreso con el paso del tiempo.
+#Sin embargo, llega un punto (forma cóncava) donde la persona deja de ser menos productiva dada la edad.
 GIH<-GIH %>% mutate (age2= age*age)
 age2
-
+#Otra forma de crear la variable al cuadrado.
 a<-age^2
+
+##**Antes de hacer la regresión, poner la explicación de la variable ingreso utilizada y poneranálisis del modelo
+##Ahora se hace la regresión, donde y=ingreso laboral mensual y x=edad+edad^2. Luego se hace 
 reg_1<-lm(y_ingLab_m~age+age2,GIH)
 summary(reg1)
+
+##Ahora se trae la librería tidiverse para hacer el plot de la predicción edad-ingreso
 require("tidiverse")
 GIH<-data.frame(age=runif(30,18,80))
 GIH<- GIH %>% mutate(age2=age^2,
@@ -204,6 +231,11 @@ GIH<- GIH %>% mutate(age2=age^2,
 reg_1<-lm(y_ingLab_m~age+age2,GIH)
 ggplot(GIH , mapping = aes(x = age , y = predict(reg_1))) +
   geom_point(col = "red" , size = 0.5)
+
+#otra opción
+ggplot(GIH, aes(x=age, y=predict(reg_1)))+geom_point() 
++ labs(x="y_ingLab_m",y="edad", title="grafico")+geom_point(col="red", size=0.5)
++geom_smooth(method="lm")
 
 #########
 
