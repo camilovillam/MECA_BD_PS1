@@ -220,6 +220,10 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
+#OJO: EN ESTE PUNTO ES IMPORTANTE REVISAR CUÁL ES LA BASE DE DATOS
+# QUE SE UTILIZA EN CADA MOMENTO: TESTING? TRAININIG? COMPLETA?
+# TENER CUIDADO EN LOS DIFERENTES INCISOS
+
 
 
 # Cargar base de datos
@@ -490,6 +494,7 @@ model2_CV_K <- train(ingtotob ~ age,
 # 
 # i. Write a loop that does the following:
 # • Estimate the regression model using all but the i − th observation. 
+#     (done)
 # • Calculate the prediction error for the i − th observation, i.e.
 #   (yi − yˆi) 
 # • Calculate the average of the numbers obtained in the previous
@@ -500,7 +505,29 @@ model2_CV_K <- train(ingtotob ~ age,
 # leverage statistic
 
 
-#PUNTO C, PENDIENTE!
+#Inicializo una lista vacía para guardar las N regresiones
+
+loocv_regs <- vector("list",nrow(training))
 
 
+#Prueba para un elemento
+
+k <- 1
+
+nrow(training)
+
+dataset <- training[-k,]
+nrow(training)
+nrow(dataset)
+
+loocv_regs[[k]] <- lm(ingtotob ~ age,data=training[-k,])
+yi <- training$ingtotob[k]
+yi_fitted <- loocv_regs[[k]]$fitted.values[[k]]
+
+stargazer(loocv_regs[[k]],type="text")
+
+for (k in 1:nrow(training)){
+  loocv_regs[[k]] <- lm(ingtotob ~ age,data=training[-k,])
+  
+}
 
