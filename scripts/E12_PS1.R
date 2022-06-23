@@ -268,8 +268,6 @@ ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) +
 #Siguiente inciso: usar bootstrap para calcular errores estandar e intervalos de confianza
 #del "peak age" por genero
 
-#https://towardsdatascience.com/a-practical-guide-to-bootstrap-with-r-examples-bd975ec6dcea
-
 install.packages('boot',dep=TRUE)
 library(boot)
 
@@ -357,18 +355,19 @@ IC_sup_h
 
 #primero se debe formular la regresión con dicha variables de control
 #se utiliza la función factor para crear variables dicotoma de cada categoría 
-#se toman como variables control: p6210 que indican el nivel de educación
-#y la variable oficio 
+#se toma como variable de control: p6210 que indica el nivel de educación
 
-regP4_5<-lm(ln_ing~mujer+age+age2+(mujer*age)+factor(p6210)+factor(oficio), data=datosGEIH_P4)
+regP4_5<-lm(ln_ing~mujer+age+factor(p6210), data=datosGEIH_P4)
 summary(regP4_5)
 stargazer(regP4_5,type="text")
 
 #aplicación teorema FWL(Frisch-Waugh-Lovell)
 library(dplyr)
-datosGEIH_P4 <- datosGEIH_P4 %>% mutate(res_y_e=lm(ln_ing~mujer,datosGEIH_P4)$residuals,
-                                        res_x_e=lm(age~mujer,datosGEIH_P4)$residuals,
-                                        )
+
+regx<-lm(mujer~age+factor(p6210),datosGEIH_P4)
+regy<-lm(ln_ing~age+factor(p6210),datosGEIH_P4)
+
+datosGEIH_P4 <- datosGEIH_P4 %>%mutate (res_x_e=regx$residuals,res_y_e=regy$residuals)
 regP4_6<-lm(res_y_e~res_x_e,datosGEIH_P4)
 stargazer(regP4_5,regP4_6,type="text")
 
