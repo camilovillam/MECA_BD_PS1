@@ -182,8 +182,96 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 # Punto 2: limpieza de datos ----------------------------------------------
 
+# Eliminamos todas las variables pre existentes
+rm(list = ls())
 
+#Se toma la tabla llamada datosGEIH y se crea una copia por si acaso
+datosGEIH_P2 <- data.frame(datosGEIH)
 
+# Número de filas
+nrow(datosGEIH_P2)#Se inicia con 32177 filas
+
+# Número de columnas
+ncol(datosGEIH_P2)
+
+# Vamos a analizar su estructura
+str(datosGEIH_P2)
+
+#El enunciado dice que debemos enfocarnos en empleados mayores de 18 años
+#entonces se borran los datos de las personas que tienen 18 años o menos
+datosGEIH_P2 <- datosGEIH_P2[datosGEIH_P2$age > 18, ] # Atención a la coma y el espacio al final
+
+# Número de filas
+nrow(datosGEIH_P2)#Quedan 24054 filas
+
+#El enunciado dice que debemos enfocarnos en empleados mayores de 18 años
+#entonces se borran los datos de las personas que no se encuentran ocupadas
+datosGEIH_P2 <- datosGEIH_P2[datosGEIH_P2$ocu == 1, ] # Atención a la coma y el espacio al final
+
+# Número de filas
+nrow(datosGEIH_P2)#Quedan 16397 filas
+
+#Ahora se analiza el número y el porcentaje de NAs por variable.
+
+cantidad_na <- sapply(datosGEIH_P2, function(x) sum(is.na(x)))
+cantidad_na <- data.frame(cantidad_na)
+porcentaje_na <- cantidad_na/nrow(datosGEIH_P2)
+
+# Porcentaje de observaciones faltantes. 
+p <- mean(porcentaje_na[,1])
+print(paste0("En promedio el ", round(p*100, 2), "% de las entradas están vacías"))
+#En promedio el 44.96% de las entradas están vacías"
+
+#Se visualiza el porcentaje de observaciones faltantes por variable
+
+# se ordena de mayor a menor
+porcentaje_na <- arrange(porcentaje_na, desc(cantidad_na))
+
+# se convierte el nombre de la fila en columna
+porcentaje_na <- rownames_to_column(porcentaje_na, "variable")
+
+# se quitan las variables que no tienen NAs
+filtro <- porcentaje_na$cantidad_na == 0
+variables_sin_na <- porcentaje_na[filtro, "variable"]
+variables_sin_na <- paste(variables_sin_na, collapse = ", ")
+print(paste("Las variables sin NAs son:", variables_sin_na))
+
+porcentaje_na <- porcentaje_na[!filtro,]
+
+orden <- porcentaje_na$variable[length(porcentaje_na$variable):1]
+porcentaje_na$variable <- factor(porcentaje_na$variable,
+                                 levels = orden)
+
+# Como son tantas variables se hacen 3 gráficas
+ggplot(porcentaje_na[1:50,], 
+       aes(y = variable, x = cantidad_na)) +
+  geom_bar(stat = "identity", fill = "darkblue") +
+  geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
+            colour = "white", position = "dodge", hjust = 1.3,
+            size = 2, fontface = "bold") +
+  theme_classic() +
+  labs(x = "Porcentaje de NAs", y = "Variables") +
+  scale_x_continuous(labels = scales::percent, limits = c(0, 1))
+
+ggplot(porcentaje_na[51:100,], 
+       aes(y = variable, x = cantidad_na)) +
+  geom_bar(stat = "identity", fill = "darkblue") +
+  geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
+            colour = "white", position = "dodge", hjust = 1.3,
+            size = 2, fontface = "bold") +
+  theme_classic() +
+  labs(x = "Porcentaje de NAs", y = "Variables") +
+  scale_x_continuous(labels = scales::percent, limits = c(0, 1))
+
+ggplot(porcentaje_na[101:nrow(porcentaje_na),], 
+       aes(y = variable, x = cantidad_na)) +
+  geom_bar(stat = "identity", fill = "darkblue") +
+  geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
+            colour = "white", position = "dodge", hjust = 1.3,
+            size = 2, fontface = "bold") +
+  theme_classic() +
+  labs(x = "Porcentaje de NAs", y = "Variables") +
+  scale_x_continuous(labels = scales::percent, limits = c(0, 1))
 
 # Punto 3: modelo ingresos por edad ---------------------------------------
 
