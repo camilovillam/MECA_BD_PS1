@@ -262,8 +262,12 @@ library(ggplot2)
 #plot predicted(ln_ing) vs. age
 
 ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) + 
-  geom_point() +
+  geom_point(aes(color=factor(mujer))) +
   labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
+
+#ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) + 
+  #geom_point() +
+  #labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
 
 #Siguiente inciso: usar bootstrap para calcular errores estandar e intervalos de confianza
 #del "peak age" por genero
