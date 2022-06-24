@@ -182,6 +182,21 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 # Punto 2: limpieza de datos ----------------------------------------------
 
+install.packages("pacman")
+require(pacman)
+
+# usar la función p_load de pacman para instalar/llamar las librerías de la clase
+p_load(rio) # Librería para importar datos 
+p_load(tidyverse) # Librería para limpiar datos
+p_load(e1071) # Tiene la función para calcular skewness
+p_load(EnvStats) # Transformación Box-Cox
+p_load(tidymodels) # Modelos ML
+p_load(ggplot2) # Librería para visualizar datos
+p_load(scales) # Formato de los ejes en las gráficas
+p_load(ggpubr) # Combinar gráficas
+p_load(knitr) # Tablas dentro de Rmarkdown
+p_load(kableExtra) # Tablas dentro de Rmarkdown
+
 # Eliminamos todas las variables pre existentes
 rm(list = ls())
 
@@ -272,6 +287,79 @@ ggplot(porcentaje_na[101:nrow(porcentaje_na),],
   theme_classic() +
   labs(x = "Porcentaje de NAs", y = "Variables") +
   scale_x_continuous(labels = scales::percent, limits = c(0, 1))
+
+##Filrado
+
+##Se eliminan las variables que tienen más del 5% en NAS
+filtro <- porcentaje_na$cantidad_na > 0.05
+variables_eliminar <- porcentaje_na$variable[filtro]
+k0 <- ncol(datosGEIH_P2)
+datosGEIH_P2 <- (datosGEIH_P2) %>%
+  select(-variables_eliminar)
+k1 <- ncol(datosGEIH_P2)
+print(paste("Se eliminarion", k0-k1, "variables. Ahora la base tiene", k1, "columnas."))
+
+# Número de filas
+nrow(datosGEIH_P2)#Ahora tiene 16397 filas
+
+# Número de columnas
+ncol(datosGEIH_P2)#Ahora tiene 63 columnas
+
+#Se vuelve aanalizar el número y el porcentaje de NAs por variable.
+
+cantidad_na <- sapply(datosGEIH_P2, function(x) sum(is.na(x)))
+cantidad_na <- data.frame(cantidad_na)
+porcentaje_na <- cantidad_na/nrow(datosGEIH_P2)
+
+# Porcentaje de observaciones faltantes. 
+p <- mean(porcentaje_na[,1])
+print(paste0("En promedio el ", round(p*100, 2), "% de las entradas están vacías"))
+#En promedio el 0.03% de las entradas están vacías"
+
+#Las variables que son determinantes para los ingresos son las relacionadas con:
+#Edad: age -> Variable númerica
+#Sexo: sex -> Variable categórica
+#Nivel de educación: p6210 -> Variable categórica
+#Profesión/oficio: oficio -> Variable categórica
+#Tamaño de la empresa: sizeFirm -> Variable categórica
+#tipo de trabajador(#Tipo de contrato): formal, informal-> Variable categórica
+#Número de personas en la empresa
+#horas trabajadas:totalHoursWorked -> Variable númerica
+
+#Para la variable ingreso, se toma ingreso total, porque se asume como empleado también a los independientes, cuenta propias y contratistas
+#ingreso: ingtot -> Variable númerica
+
+#Se crea un subconjunto con las variables de interes
+db_P2=subset(datosGEIH_P2, select=c(ingtot,age,sex,p6210,oficio,sizeFirm,formal,informal,totalHoursWorked))
+
+#Se hace un resumen de estas variables
+
+summary(db_P2)
+
+#prueba gráficas de las variables
+install.packages('GGally')# Se instala un paquete para gráficos
+library(GGally)
+ggpairs(db_P2)
+
+#variables númericas: histograma y diagrama de cajas
+ggplot(db_P2) + geom_histogram (aes(ingtot))
+ggplot(db_P2) + geom_boxplot (aes(ingtot))
+
+ggplot(db_P2) + geom_histogram (aes(age))
+ggplot(db_P2) + geom_boxplot (aes(age))
+
+ggplot(db_P2) + geom_histogram (aes(totalHoursWorked))
+ggplot(db_P2) + geom_boxplot (aes(totalHoursWorked))
+  
+#variables categóricas: diagrama de barras y diagrama de sectores 
+
+ggplot(db_P2) + geom_bar (aes(sex)) +
+  labs(x='Sexo', y='Frecuencia', title='Diagrama de barras: Sexo')
+
+ggplot(db_P2) + geom_bar (aes(p6210))
+ggplot(db_P2) + geom_bar (aes(oficio))
+ggplot(db_P2) + geom_bar (aes(sizeFirm))
+ggplot(db_P2) + geom_bar (aes(formal))
 
 # Punto 3: modelo ingresos por edad ---------------------------------------
 
