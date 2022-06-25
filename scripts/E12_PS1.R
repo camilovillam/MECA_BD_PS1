@@ -6,6 +6,8 @@ library(GGally)
 library(stargazer)
 library(tidyverse)
 
+library(tableone)
+
 # Punto 1: adquisición de datos -------------------------------------------
 
 
@@ -98,7 +100,6 @@ datosGEIH_P2 <- subset(datosGEIH_P2,
                          oficio,
                          sizeFirm,
                          formal,
-                         informal,
                          totalHoursWorked,
                          p6426,
                          p6050
@@ -374,13 +375,51 @@ ggplot(datosGEIH_P2) + geom_bar (aes(sizeFirm))
 ggplot(datosGEIH_P2) + geom_bar (aes(formal))
 
 
+#También faltan las tablas de estadísticas descriptivas
+#de las variables empleadas (?)
+
+#Antes de la tabla, se deben convertir las variables
+#categóricas
+
+datosGEIH_P2$sex <- factor(datosGEIH_P2$sex,
+                           levels = c(0,1),
+                           labels = c("Mujer", "Hombre"))
+
+datosGEIH_P2$sizeFirm <- factor(datosGEIH_P2$sizeFirm,
+                          levels = c(1,2,3,4,5),
+                          labels = c("Independiente",
+                                     "2-5 trabajadores",
+                                     "6-10 trabajadores",
+                                     "11-50 trabajadores",
+                                     "Más de 50 trabajadores"))
+
+datosGEIH_P2$formal <- factor(datosGEIH_P2$formal,
+                              levels = c(0,1),
+                              labels = c("Informal","Formal"))
+
+datosGEIH_P2$oficio <- factor(datosGEIH_P2$oficio)
+
+
+#Tabla descriptiva:
+#Se usa la librería "CreateTableOne" para crear una tabla con todas las variables
+
+Tabla_descr <- CreateTableOne(data = datosGEIH_P2)
+print(Tabla_descr,showAllLevels = TRUE)
+summary(Tabla_descr)
+Tabla_descr_csv <- print(Tabla_descr, exact = "stage", quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+
+## Save to a CSV file
+setwd("~/GitHub/MECA_BD_PS1")
+write.csv(Tabla_descr_csv, file = "./views/tabla_descr.csv")
+
+
+
 #Guardo la base de datos en un archivo .rds
 setwd("~/GitHub/MECA_BD_PS1")
 saveRDS(datosGEIH_P2,"./stores/datosGEIH_P2.rds")
 
 
 #Ensayo de modelo de regresión (adelantándome a otros puntos...)
-
 
 reg_completa <- lm(ingtot ~ 
                      age + 
@@ -393,7 +432,8 @@ reg_completa <- lm(ingtot ~
                      formal +
                      totalHoursWorked +
                      p6426 +
-                     num_hijos,
+                     num_hijos+
+                     sex:num_hijos,
                    data=datosGEIH_P2)
 
 stargazer(reg_completa,type="text")
