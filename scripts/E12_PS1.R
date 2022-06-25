@@ -62,8 +62,6 @@ nrow(datosGEIH_P2)#Quedan 16397 filas
 
 #Ahora se analiza el número y el porcentaje de NAs por variable.
 
-?sapply
-
 cantidad_na <- sapply(datosGEIH_P2, function(x) sum(is.na(x)))
 cantidad_na <- data.frame(cantidad_na)
 porcentaje_na <- cantidad_na/nrow(datosGEIH_P2)
@@ -93,9 +91,6 @@ orden <- porcentaje_na$variable[length(porcentaje_na$variable):1]
 
 porcentaje_na$variable <- factor(porcentaje_na$variable,
                                  levels = orden)
-#¿Por qué se guardaron los nombres de variables como categóricas?
-#Creo que cuando hay más de 99 niveles (creo) en una categórca no
-#los toma como categóricas.
 
 
 # Como son tantas variables se hacen 3 gráficas
@@ -167,6 +162,52 @@ print(paste0("En promedio el ", round(p*100, 2), "% de las entradas están vací
 #Número de personas en la empresa
 #Horas trabajadas:totalHoursWorked -> Variable númerica
 #Número de hijos: ver a continuación (se calcula)
+
+
+#--
+#Años de educación:
+#Tal vez no considerar el nivel educativo como una categórica,
+#sino calcular el número de años aproximado.
+#Esto es importante porque el nivel terciario puede ser muy
+#diferente, y puede haber importante variación en cantidad de
+#años y salarios.
+
+#Se pueden aproximar los años estudiados (lo estoy haciendo en otra DB, luego
+#se puede integrar)
+
+db_educ <- subset(datosGEIH,select=c(p6210,p6210s1,age))
+db_educ <- db_educ[complete.cases(db_educ), ] #Elimino todos los NA, por ahora
+
+hist(db_educ$p6210,breaks=10)
+
+table(db_educ$p6210,db_educ$p6210s1)
+
+db_educ <- db_educ %>%
+  mutate(años_educ = case_when(
+    p6210 == 6 ~ 11 + as.numeric(p6210s1),
+    p6210 == 9 ~ mean(as.numeric(p6210s1)),#Se imputa la media a un par de casos
+    TRUE ~ as.numeric(p6210s1)
+))
+
+#Ya queda la variable años_educ como continua y se puede incorporar a los modelos.
+
+#--
+
+
+#--
+#Años de experiencia laboral
+#Se puede utilizar un proxy: Experiencia potencial:
+
+# En la literatura se ha utilizado como proxy de la experiencia la experiencia
+# potencial. Esta nace de restarle a la edad de la persona los años que ha
+# estudiado y, además, cinco (5) años –pues en sus años de primera infancia ni
+# estudió ni trabajó.
+
+db_educ$exper_pot <- (db_educ$age - db_educ$años_educ - 5)
+
+#Ya queda la variable años_educ como continua y se puede incorporar a los modelos.
+
+#--
 
 
 #--
@@ -244,6 +285,8 @@ db_P2 <- subset(datosGEIH_P2,
                          informal,
                          totalHoursWorked,
                          num_hijos))
+
+
 
 
 #Se hace un resumen de estas variables
