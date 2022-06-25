@@ -3,6 +3,8 @@
 
 install.packages('GGally')# Se instala un paquete para gráficos
 library(GGally)
+library(stargazer)
+library(tidyverse)
 
 # Punto 1: adquisición de datos -------------------------------------------
 
@@ -26,7 +28,6 @@ p_load(kableExtra) # Tablas dentro de Rmarkdown
 
 # Eliminamos todas las variables pre existentes
 rm(list = ls())
-
 
 
 
@@ -60,6 +61,54 @@ datosGEIH_P2 <- datosGEIH_P2[datosGEIH_P2$ocu == 1, ] # Atención a la coma y el
 # Número de filas
 nrow(datosGEIH_P2)#Quedan 16397 filas
 
+
+#VARIABLES DE INTERÉS:
+
+#Las variables que son determinantes para los ingresos son las relacionadas con:
+#Edad: age -> Variable númerica
+#Sexo: sex -> Variable categórica
+#Nivel de educación: p6210 -> Variable categórica
+#Años de educación: p6210 y p6210s1 -> Variable continua
+#Profesión/oficio: oficio -> Variable categórica
+#Tamaño de la empresa: sizeFirm -> Variable categórica
+#Tipo de trabajador(#Tipo de contrato): formal, informal-> Variable categórica
+#Número de personas en la empresa
+#Horas trabajadas:totalHoursWorked -> Variable númerica
+
+#Número de hijos: se calcula más adelante
+#Experiencia laboral: no disponible, se calcula el proxy de Experiencia potencial.
+#Tiempo en el trabajo actual (¿antigüedad?) - p6426
+
+#Para la variable ingreso, se toma ingreso total, porque se asume como empleado
+#también a los independientes, cuenta propias y contratistas ingreso: ingtot ->
+#Variable númerica
+
+#ingtot: variable Y
+
+#Se crea un subconjunto con las variables de interés
+datosGEIH_P2 <- subset(datosGEIH_P2,
+                select=c(directorio,
+                         secuencia_p,
+                         orden,
+                         ingtot,
+                         age,
+                         sex,
+                         p6210,
+                         p6210s1,
+                         oficio,
+                         sizeFirm,
+                         formal,
+                         informal,
+                         totalHoursWorked,
+                         p6426,
+                         p6050
+                         ))
+
+#Se hace un resumen de estas variables
+
+summary(datosGEIH_P2)
+
+
 #Ahora se analiza el número y el porcentaje de NAs por variable.
 
 cantidad_na <- sapply(datosGEIH_P2, function(x) sum(is.na(x)))
@@ -79,22 +128,22 @@ porcentaje_na <- arrange(porcentaje_na, desc(cantidad_na))
 # se convierte el nombre de la fila en columna
 porcentaje_na <- rownames_to_column(porcentaje_na, "variable")
 
-# se quitan las variables que no tienen NAs
-filtro <- porcentaje_na$cantidad_na == 0
-variables_sin_na <- porcentaje_na[filtro, "variable"]
-variables_sin_na <- paste(variables_sin_na, collapse = ", ")
-print(paste("Las variables sin NAs son:", variables_sin_na))
-
-porcentaje_na <- porcentaje_na[!filtro,]
-
+# # se quitan las variables que no tienen NAs
+# filtro <- porcentaje_na$cantidad_na == 0
+# variables_sin_na <- porcentaje_na[filtro, "variable"]
+# variables_sin_na <- paste(variables_sin_na, collapse = ", ")
+# print(paste("Las variables sin NAs son:", variables_sin_na))
+# 
+# porcentaje_na <- porcentaje_na[!filtro,]
+# 
 orden <- porcentaje_na$variable[length(porcentaje_na$variable):1]
 
 porcentaje_na$variable <- factor(porcentaje_na$variable,
-                                 levels = orden)
+                                  levels = orden)
 
 
-# Como son tantas variables se hacen 3 gráficas
-ggplot(porcentaje_na[1:50,], 
+# Se grafica el % de NA de las diferentes variables de interés
+ggplot(porcentaje_na[1:nrow(porcentaje_na),], 
        aes(y = variable, x = cantidad_na)) +
   geom_bar(stat = "identity", fill = "darkblue") +
   geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
@@ -104,95 +153,110 @@ ggplot(porcentaje_na[1:50,],
   labs(x = "Porcentaje de NAs", y = "Variables") +
   scale_x_continuous(labels = scales::percent, limits = c(0, 1))
 
-ggplot(porcentaje_na[51:100,], 
-       aes(y = variable, x = cantidad_na)) +
-  geom_bar(stat = "identity", fill = "darkblue") +
-  geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
-            colour = "white", position = "dodge", hjust = 1.3,
-            size = 2, fontface = "bold") +
-  theme_classic() +
-  labs(x = "Porcentaje de NAs", y = "Variables") +
-  scale_x_continuous(labels = scales::percent, limits = c(0, 1))
+# 
+# ggplot(porcentaje_na[51:100,], 
+#        aes(y = variable, x = cantidad_na)) +
+#   geom_bar(stat = "identity", fill = "darkblue") +
+#   geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
+#             colour = "white", position = "dodge", hjust = 1.3,
+#             size = 2, fontface = "bold") +
+#   theme_classic() +
+#   labs(x = "Porcentaje de NAs", y = "Variables") +
+#   scale_x_continuous(labels = scales::percent, limits = c(0, 1))
+# 
+# ggplot(porcentaje_na[101:nrow(porcentaje_na),], 
+#        aes(y = variable, x = cantidad_na)) +
+#   geom_bar(stat = "identity", fill = "darkblue") +
+#   geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
+#             colour = "white", position = "dodge", hjust = 1.3,
+#             size = 2, fontface = "bold") +
+#   theme_classic() +
+#   labs(x = "Porcentaje de NAs", y = "Variables") +
+#   scale_x_continuous(labels = scales::percent, limits = c(0, 1))
+# 
 
-ggplot(porcentaje_na[101:nrow(porcentaje_na),], 
-       aes(y = variable, x = cantidad_na)) +
-  geom_bar(stat = "identity", fill = "darkblue") +
-  geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
-            colour = "white", position = "dodge", hjust = 1.3,
-            size = 2, fontface = "bold") +
-  theme_classic() +
-  labs(x = "Porcentaje de NAs", y = "Variables") +
-  scale_x_continuous(labels = scales::percent, limits = c(0, 1))
 
-##Filrado
+##Filtrado o imputación:
 
-##Se eliminan las variables que tienen más del 5% en NAS
-filtro <- porcentaje_na$cantidad_na > 0.05
-variables_eliminar <- porcentaje_na$variable[filtro]
-k0 <- ncol(datosGEIH_P2)
-datosGEIH_P2 <- (datosGEIH_P2) %>%
-  select(-variables_eliminar)
-k1 <- ncol(datosGEIH_P2)
-print(paste("Se eliminarion", k0-k1, "variables. Ahora la base tiene", k1, "columnas."))
+#NO QUEDAN REGISTROS DE NA EN LAS VARIABLES
+#SE DEJA TODO ESTA SECCIÓN COMENTADA
 
-# Número de filas
-nrow(datosGEIH_P2)#Ahora tiene 16397 filas
 
-# Número de columnas
-ncol(datosGEIH_P2)#Ahora tiene 63 columnas
+# #Después de escoger las variables de interés,
+# #podemos definir la estrategia de filtrado:
+# 
+# # a. Eliminar los NA en las variables de interés
+# # b. Imputar mediana 
+# # c. Imputar media
+# 
+# 
+# # ##Se eliminan las variables que tienen más del 5% en NAS
+# # filtro <- porcentaje_na$cantidad_na > 0.05
+# # variables_eliminar <- porcentaje_na$variable[filtro]
+# # k0 <- ncol(datosGEIH_P2)
+# # datosGEIH_P2 <- (datosGEIH_P2) %>%
+# #   select(-variables_eliminar)
+# # k1 <- ncol(datosGEIH_P2)
+# # print(paste("Se eliminarion", k0-k1, "variables. Ahora la base tiene", k1, "columnas."))
+# 
+# 
+# #Un primer filtro, general, es dejar solo los registros completos:
+# 
+# nrow(datosGEIH_P2)
+# datosGEIH_P2_sin_NA <- datosGEIH_P2[complete.cases(datosGEIH_P2), ]
+# nrow(datosGEIH_P2)
+# 
+# #Se pasa de 24.054 a 16.397 observaciones. Se eliminan 7657 observaciones.
+# 
+# 
+# #Una segunda estrategia es imputar la mediana de cada variable a las faltantes:
+# 
+# # Número de filas
+# nrow(datosGEIH_P2)#Ahora tiene 16397 filas
+# 
+# # Número de columnas
+# ncol(datosGEIH_P2)#Ahora tiene 63 columnas
+# 
+# #Se vuelve aanalizar el número y el porcentaje de NAs por variable.
+# 
+# cantidad_na <- sapply(datosGEIH_P2, function(x) sum(is.na(x)))
+# cantidad_na <- data.frame(cantidad_na)
+# porcentaje_na <- cantidad_na/nrow(datosGEIH_P2)
+# 
+# # Porcentaje de observaciones faltantes. 
+# p <- mean(porcentaje_na[,1])
+# print(paste0("En promedio el ", round(p*100, 2), "% de las entradas están vacías"))
+# #En promedio el 0.03% de las entradas están vacías"
+# 
 
-#Se vuelve aanalizar el número y el porcentaje de NAs por variable.
 
-cantidad_na <- sapply(datosGEIH_P2, function(x) sum(is.na(x)))
-cantidad_na <- data.frame(cantidad_na)
-porcentaje_na <- cantidad_na/nrow(datosGEIH_P2)
 
-# Porcentaje de observaciones faltantes. 
-p <- mean(porcentaje_na[,1])
-print(paste0("En promedio el ", round(p*100, 2), "% de las entradas están vacías"))
-#En promedio el 0.03% de las entradas están vacías"
+#Cálculo de variables adicionales:
 
-#Las variables que son determinantes para los ingresos son las relacionadas con:
-#Edad: age -> Variable númerica
-#Sexo: sex -> Variable categórica
-#Nivel de educación: p6210 -> Variable categórica
-#Profesión/oficio: oficio -> Variable categórica
-#Tamaño de la empresa: sizeFirm -> Variable categórica
-#Tipo de trabajador(#Tipo de contrato): formal, informal-> Variable categórica
-#Número de personas en la empresa
-#Horas trabajadas:totalHoursWorked -> Variable númerica
-#Número de hijos: ver a continuación (se calcula)
-
+#Después de haber filtrado / imputado valores, es posible hacer el 
+#cálculo de variables adicionales de interés: años de educación,
+#experiencia potencial y número de hijos.
 
 #--
 #Años de educación:
+
 #Tal vez no considerar el nivel educativo como una categórica,
 #sino calcular el número de años aproximado.
 #Esto es importante porque el nivel terciario puede ser muy
 #diferente, y puede haber importante variación en cantidad de
 #años y salarios.
 
-#Se pueden aproximar los años estudiados (lo estoy haciendo en otra DB, luego
-#se puede integrar)
+#Se pueden aproximar los años estudiados con la información en
+#p6210 y p6210s1 (Nivel educativo y último año aprobado)
 
-db_educ <- subset(datosGEIH,select=c(p6210,p6210s1,age))
-db_educ <- db_educ[complete.cases(db_educ), ] #Elimino todos los NA, por ahora
-
-hist(db_educ$p6210,breaks=10)
-
-table(db_educ$p6210,db_educ$p6210s1)
-
-db_educ <- db_educ %>%
+datosGEIH_P2 <- datosGEIH_P2 %>%
   mutate(años_educ = case_when(
     p6210 == 6 ~ 11 + as.numeric(p6210s1),
-    p6210 == 9 ~ mean(as.numeric(p6210s1)),#Se imputa la media a un par de casos
+    p6210 == 9 ~ median(as.numeric(p6210s1)),#Se imputa la mediana a un par de casos
     TRUE ~ as.numeric(p6210s1)
-))
-
-#Ya queda la variable años_educ como continua y se puede incorporar a los modelos.
+  ))
 
 #--
-
 
 #--
 #Años de experiencia laboral
@@ -203,12 +267,9 @@ db_educ <- db_educ %>%
 # estudiado y, además, cinco (5) años –pues en sus años de primera infancia ni
 # estudió ni trabajó.
 
-db_educ$exper_pot <- (db_educ$age - db_educ$años_educ - 5)
-
-#Ya queda la variable años_educ como continua y se puede incorporar a los modelos.
+datosGEIH_P2$exper_pot <- (datosGEIH_P2$age - datosGEIH_P2$años_educ - 5)
 
 #--
-
 
 #--
 #NÚMERO DE HIJOS:
@@ -254,7 +315,7 @@ num_hijos <- datosGEIH_P2 %>%
 #Solo a quienes son padres/madres o su pareja
 #se les imputa el número de hijos;
 #a los demás, se les imputa 0.
-#(esto es una aproximación al número de hijos)
+#(esto es un proxy al número de hijos, puede haber imprecisiones)
 
 num_hijos <- within(num_hijos, {
   num_hijos[p6050 != 1 & p6050 != 2] <- 0
@@ -266,57 +327,81 @@ num_hijos <- within(num_hijos, {
 datosGEIH_P2 <- 
   inner_join(datosGEIH_P2, num_hijos,
              by = c("directorio","secuencia_p","orden","p6050"))
+
 #--  
 
+#Variables cuadráticas
+datosGEIH_P2$age_cuad <- datosGEIH_P2$age^2
+datosGEIH_P2$años_educ_cuad <- datosGEIH_P2$años_educ^2
+datosGEIH_P2$exp_pot_cuad <- datosGEIH_P2$exper_pot^2
 
-#Para la variable ingreso, se toma ingreso total, porque se asume como empleado
-#también a los independientes, cuenta propias y contratistas ingreso: ingtot ->
-#Variable númerica
-
-#Se crea un subconjunto con las variables de interes
-db_P2 <- subset(datosGEIH_P2,
-                select=c(ingtot,
-                         age,
-                         sex,
-                         p6210,
-                         oficio,
-                         sizeFirm,
-                         formal,
-                         informal,
-                         totalHoursWorked,
-                         num_hijos))
+datosGEIH_P2$p6426 <- datosGEIH_P2$p6426/12 #Se pasa a años
 
 
 
 
-#Se hace un resumen de estas variables
-
-summary(db_P2)
 
 #prueba gráficas de las variables
 install.packages('GGally')# Se instala un paquete para gráficos
 library(GGally)
-ggpairs(db_P2)
+ggpairs(datosGEIH_P2)
 
 #variables númericas: histograma y diagrama de cajas
-ggplot(db_P2) + geom_histogram (aes(ingtot))
-ggplot(db_P2) + geom_boxplot (aes(ingtot))
+ggplot(datosGEIH_P2) + geom_histogram (aes(ingtot))
+ggplot(datosGEIH_P2) + geom_boxplot (aes(ingtot))
 
-ggplot(db_P2) + geom_histogram (aes(age))
-ggplot(db_P2) + geom_boxplot (aes(age))
+ggplot(datosGEIH_P2) + geom_histogram (aes(age))
+ggplot(datosGEIH_P2) + geom_boxplot (aes(age))
 
-ggplot(db_P2) + geom_histogram (aes(totalHoursWorked))
-ggplot(db_P2) + geom_boxplot (aes(totalHoursWorked))
+ggplot(datosGEIH_P2) + geom_histogram (aes(totalHoursWorked))
+ggplot(datosGEIH_P2) + geom_boxplot (aes(totalHoursWorked))
+
+ggplot(datosGEIH_P2) + geom_histogram (aes(años_educ))
+ggplot(datosGEIH_P2) + geom_boxplot (aes(años_educ))
+
+ggplot(datosGEIH_P2) + geom_histogram (aes(num_hijos))
+ggplot(datosGEIH_P2) + geom_boxplot (aes(num_hijos))
+
   
 #variables categóricas: diagrama de barras y diagrama de sectores 
 
-ggplot(db_P2) + geom_bar (aes(sex)) +
+ggplot(datosGEIH_P2) + geom_bar (aes(sex)) +
   labs(x='Sexo', y='Frecuencia', title='Diagrama de barras: Sexo')
 
-ggplot(db_P2) + geom_bar (aes(p6210))
-ggplot(db_P2) + geom_bar (aes(oficio))
-ggplot(db_P2) + geom_bar (aes(sizeFirm))
-ggplot(db_P2) + geom_bar (aes(formal))
+ggplot(datosGEIH_P2) + geom_bar (aes(p6210))
+ggplot(datosGEIH_P2) + geom_bar (aes(oficio))
+ggplot(datosGEIH_P2) + geom_bar (aes(sizeFirm))
+ggplot(datosGEIH_P2) + geom_bar (aes(formal))
+
+
+#Guardo la base de datos en un archivo .rds
+setwd("~/GitHub/MECA_BD_PS1")
+saveRDS(datosGEIH_P2,"./stores/datosGEIH_P2.rds")
+
+
+#Ensayo de modelo de regresión (adelantándome a otros puntos...)
+
+
+reg_completa <- lm(ingtot ~ 
+                     age + 
+                     age_cuad +
+                     sex +
+                     años_educ +
+                     años_educ_cuad +
+                     oficio +
+                     sizeFirm +
+                     formal +
+                     totalHoursWorked +
+                     p6426 +
+                     num_hijos,
+                   data=datosGEIH_P2)
+
+stargazer(reg_completa,type="text")
+
+
+#Pregunta: ¿outliers? (Ver sección de "Leverage" en el punto 5).
+#¿Qué hacer con los outliers?
+
 
 
 # Punto 3: modelo ingresos por edad ---------------------------------------
