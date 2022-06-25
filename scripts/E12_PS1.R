@@ -1,7 +1,8 @@
 
 #Junio 12 de 2022
 
-
+install.packages('GGally')# Se instala un paquete para gráficos
+library(GGally)
 
 # Punto 1: adquisición de datos -------------------------------------------
 
@@ -165,21 +166,11 @@ print(paste0("En promedio el ", round(p*100, 2), "% de las entradas están vací
 #Tipo de trabajador(#Tipo de contrato): formal, informal-> Variable categórica
 #Número de personas en la empresa
 #Horas trabajadas:totalHoursWorked -> Variable númerica
-
-
-#Para la variable ingreso, se toma ingreso total, porque se asume como empleado
-#también a los independientes, cuenta propias y contratistas ingreso: ingtot ->
-#Variable númerica
-
-#Se crea un subconjunto con las variables de interes
-db_P2 <- subset(datosGEIH_P2,
-                select=c(ingtot,age,sex,p6210,oficio,
-                         sizeFirm,formal,informal,totalHoursWorked))
+#Número de hijos: ver a continuación (se calcula)
 
 
 #--
 #NÚMERO DE HIJOS:
-#Se puede calcular al final, luego de filtrar las demás variables.
 
 #Hay evidencia en la teoría (ver artículo de Lorena)
 #que indica que el número de hijos, para las mujeres,
@@ -202,39 +193,58 @@ db_P2 <- subset(datosGEIH_P2,
 # 8. Trabajador
 # 9. Otro no pariente
 
-summary(datosGEIH$p6050)
-hist(datosGEIH$p6050)
+summary(datosGEIH_P2$p6050)
+hist(datosGEIH_P2$p6050)
 
-datosGEIH$dummy_hijos <- ifelse(datosGEIH$p6050==3,1,0)
-summary(datosGEIH$dummy_hijos)
+datosGEIH_P2$dummy_hijos <- ifelse(datosGEIH_P2$p6050==3,1,0)
+summary(datosGEIH_P2$dummy_hijos)
 
 #Se calcula el número de hijos por hogar:
 
-num_hijos <- datosGEIH %>% 
+num_hijos <- datosGEIH_P2 %>% 
   group_by(directorio,secuencia_p) %>%
   summarize(directorio,
             secuencia_p,
             orden,
+            p6050,
             num_hijos=sum(dummy_hijos))
-            
+
+
+#Solo a quienes son padres/madres o su pareja
+#se les imputa el número de hijos;
+#a los demás, se les imputa 0.
+#(esto es una aproximación al número de hijos)
+
+num_hijos <- within(num_hijos, {
+  num_hijos[p6050 != 1 & p6050 != 2] <- 0
+})
+
 #Luego se añaden estos hijos a los padres o madres
-#Casos en que P6050 = 1 o 2 (para los demás, se supone 0)
-#Esto es tal vez una aproximación?
-#Cómo tratar a los nietos? No lo sé todavía.
+#Se combinan las dos bases de datos
 
-nrow(datosGEIH)
-nrow(num_hijos)
-
-datosGEIH <- 
-  inner_join(datosGEIH, num_hijos$num_hijos,
-             by = c("directorio","secuencia_p","orden"))
-
-#FALTA TERMINAR ESTO, QUE CUANDO NO SEAN NI PADRE NI MADRE
-#QUEDE EN CERO
-if(!(datosGEIH$p6050 %in% c(1,2))){datosGEIH$num_hijos <- 0}
-
+datosGEIH_P2 <- 
+  inner_join(datosGEIH_P2, num_hijos,
+             by = c("directorio","secuencia_p","orden","p6050"))
 #--  
-  
+
+
+#Para la variable ingreso, se toma ingreso total, porque se asume como empleado
+#también a los independientes, cuenta propias y contratistas ingreso: ingtot ->
+#Variable númerica
+
+#Se crea un subconjunto con las variables de interes
+db_P2 <- subset(datosGEIH_P2,
+                select=c(ingtot,
+                         age,
+                         sex,
+                         p6210,
+                         oficio,
+                         sizeFirm,
+                         formal,
+                         informal,
+                         totalHoursWorked,
+                         num_hijos))
+
 
 #Se hace un resumen de estas variables
 
