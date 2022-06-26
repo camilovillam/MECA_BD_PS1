@@ -1193,6 +1193,13 @@ tail(leverage)
 #¿Cómo saber si es muy grande o no?
 #Inquietud más conceptual, pendiente por resolver
 
+#LUCAS:
+# "Pueden hacer una matriz 2 x 2 donde tengan u_j alto vs u_j bajo en las
+# columnas y en las filas h_j bajo y alto. Ahi podrian clasificar cada alpha_j
+# en un cuadrante para pensar si las observaciones son outliers, con influencia
+# alta o baja, etc"
+
+
 
 #Guardamos en un nuevo df ingreso y edad de los 100 ingresos más altos de Test
 pot_outliers <- test[leverage[1:100,1],c("ingtotob","age")]
