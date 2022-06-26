@@ -761,17 +761,21 @@ eta_mod_f(GIH, 1:n)
 
 #Se toma la tabla llamada datosGEIH y se crea una copia por si acaso
 
-datosGEIH_P4 <- data.frame(datosGEIH)
+setwd("C:\\Users\\Lore Molano\\Documents\\MECA_BD_PS1") #ajustar dirección al inicio, dependiendo del pc
+datosGEIH_P4 <-readRDS("./stores/datosGEIH_P2.rds")
 
-#se toma la variable ingreso total observado (ingtotob) como la variable ingreso
+summary(datosGEIH_P4)
 
-#Se convierte la variable ingreso (ingtotob) en logaritmo y se guarda en la misma tabla
+#se toma la variable ingreso total observado (ingtot) como la variable ingreso
+
+#Se convierte la variable ingreso (ingtot) en logaritmo y se guarda en la misma tabla
 #El nombre de la variable ingreso en logaritmo es ln_ing
 #https://www.programmingr.com/tutorial/natural-log-in-r/
 
-datosGEIH_P4$ln_ing <- log(datosGEIH_P4$ingtotob)
+datosGEIH_P4$ln_ing <- log(datosGEIH_P4$ingtot)
 
-head(datosGEIH_P4)
+#NOTA: Se eliminan las filas  que tienen Inf de la variable ln_ing (revisar cuando se termine el P2)
+datosGEIH_P4 <- datosGEIH_P4[is.finite(datosGEIH_P4$ln_ing), ]
 
 #Se crea la variable mujer a partir de la variable sex y se deja en la misma tabla
 
@@ -780,8 +784,8 @@ library(dplyr) #se llama esta libreria
 # Se crea una columna nueva basada en otra variable de otra columna
 datosGEIH_P4 <- datosGEIH_P4 %>%
   mutate(mujer = case_when(
-    sex == 0 ~ 1,
-    sex == 1 ~ 0
+    sex == 'Mujer' ~ 1,
+    sex == 'Hombre' ~ 0
   ))
 
 #se verifica la variable mediante comparación
@@ -792,11 +796,6 @@ datosGEIH_P4 %>% select (sex,mujer)
 #Reviso los valores de las variables antes de correr la regresión
 datosGEIH_P4 %>% select (ln_ing,mujer)
 
-#NOTA: Se eliminan los NA de las variables de la regresión (esto porque aun nos falta terminar el P2)
-datosGEIH_P4 <- datosGEIH_P4 %>% drop_na(mujer,ln_ing)
-
-#NOTA: Se eliminan las filas  que tienen Inf de la variable ln_ing (revisar cuando se termine el P2)
-datosGEIH_P4 <- datosGEIH_P4[is.finite(datosGEIH_P4$ln_ing), ] 
 
 #Se corre la regresión
 regP4_1<-lm(ln_ing~mujer,data=datosGEIH_P4)
@@ -808,18 +807,13 @@ summary(regP4_1)
 #Se estima primero la regresión del logaritmo de ingreso
 #para eso se crea la variable de edad al cuadrado y luego se corre la regresión
 
-datosGEIH_P4 <- datosGEIH_P4 %>% mutate(age2 = age*age)
-
-#Reviso los valores de las variables antes de correr la regresión
-datosGEIH_P4 %>% select (age,age2)
-
 #Se crea una variable de interacción entre la edad y la variable dicotoma mujer
 datosGEIH_P4 <- datosGEIH_P4 %>% mutate(mujer_age = age*mujer)
 
 #Se prueban  regresiones
 regP4_2<-lm(ln_ing~mujer+age, data=datosGEIH_P4)
-regP4_3<-lm(ln_ing~mujer+age+age2, data=datosGEIH_P4)
-regP4_4<-lm(ln_ing~mujer+age+age2+mujer_age, data=datosGEIH_P4)
+regP4_3<-lm(ln_ing~mujer+age+age_cuad, data=datosGEIH_P4)
+regP4_4<-lm(ln_ing~mujer+age+age_cuad+mujer_age, data=datosGEIH_P4)
 
 #Se utiliza stargazer para viasualizar las regresiones
 install.packages("stargazer")
@@ -836,12 +830,6 @@ ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) +
   geom_point(aes(color=factor(mujer))) +
   labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
 
-#ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) + 
-
-  #geom_point() +
-  #labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
-
-
 #Siguiente inciso: usar bootstrap para calcular errores estandar e intervalos de confianza
 #del "peak age" por genero
 
@@ -850,7 +838,7 @@ library(boot)
 
 regP4_4 #se llama la regresión de interés que ya está definida previamente
 coefs<-regP4_4$coef #se usa la función coef para extraer los coeficientes de la regresión
-coefs
+coefs#muestra los coeficientes
 
 #se asignan los coeficientes calculados
 b0<-coefs[1]
@@ -888,8 +876,8 @@ results_m
 #Se calcula el interlvalo de confianza para el peak age si es mujer
 # CI=[coef−1.96×SE,coef+1.96×SE]
 #ojo con el error estándar, se debe cambiar si ajustamos la regresión o la base de datos
-IC_inf_m <- peak_age_m - 1.96*0.5533107 #límite inferior del intervalo
-IC_sup_m <- peak_age_m + 1.96*0.5533107 #límite superior del intervalo
+IC_inf_m <- peak_age_m - 1.96*0.6262007 #límite inferior del intervalo
+IC_sup_m <- peak_age_m + 1.96*0.6262007  #límite superior del intervalo
 
 #Se aplica el bootstrap para identificar error estandar del peak age si es hombre
 peakage_h.fn<-function(datosGEIH_P4,index){
@@ -912,8 +900,8 @@ results_h
 #Se calcula el interlvalo de confianza para el peak age si es hombre
 # CI=[coef−1.96×SE,coef+1.96×SE]
 #ojo con el error estándar, se debe cambiar si ajustamos la regresión o la base de datos
-IC_inf_h <- peak_age_h - 1.96*0.5983215 #límite inferior del intervalo
-IC_sup_h <- peak_age_h + 1.96*0.5983215 #límite superior del intervalo
+IC_inf_h <- peak_age_h - 1.96*0.7453415 #límite inferior del intervalo
+IC_sup_h <- peak_age_h + 1.96*0.7453415 #límite superior del intervalo
 
 
 #Se llaman los resultados del intervalo de confianza del peak age mujer para escribirlos en el texto
@@ -934,19 +922,79 @@ IC_sup_h
 #se utiliza la función factor para crear variables dicotoma de cada categoría 
 #se toma como variable de control: p6210 que indica el nivel de educación
 
-regP4_5<-lm(ln_ing~mujer+age+age2+mujer_age+factor(p6210), data=datosGEIH_P4)
-summary(regP4_5)
-stargazer(regP4_5,type="text")
+#se prueban varias regresiones
+
+regP4_5p1<-lm(ln_ing~mujer+
+              age+
+              age_cuad+
+              mujer_age+
+              (mujer*num_hijos)+
+              años_educ+
+              años_educ_cuad+
+              factor(p6210)+
+              factor(oficio)+
+              exp_pot_cuad +
+              sizeFirm+ 
+              totalHoursWorked+
+              formal
+              , data=datosGEIH_P4)
+
+summary(regP4_5p1)
+
+regP4_5p2<-lm(ln_ing~mujer+
+                age+
+                age_cuad+
+                mujer_age+
+                años_educ+
+                años_educ_cuad+
+                factor(p6210)+
+                factor(oficio)+
+                exp_pot_cuad +
+                sizeFirm+ 
+                totalHoursWorked+
+                formal
+              , data=datosGEIH_P4)
+summary(regP4_5p2)
+
+regP4_5p3<-lm(ln_ing~mujer+
+                age+
+                age_cuad+
+                mujer_age+
+                años_educ+
+                años_educ_cuad+
+                factor(oficio)+
+                exp_pot_cuad +
+                sizeFirm+ 
+                totalHoursWorked+
+                formal
+              , data=datosGEIH_P4)
+summary(regP4_5p3)
+
+regP4_5p4<-lm(ln_ing~mujer+
+                age+
+                age_cuad+
+                mujer_age+
+                factor(p6210)+
+                factor(oficio)+
+                exp_pot_cuad +
+                sizeFirm+ 
+                totalHoursWorked+
+                formal
+              , data=datosGEIH_P4)
+summary(regP4_5p4)
+
+stargazer(regP4_5p1,regP4_5p2,regP4_5p3,regP4_5p4,type="text")
+
+regP4_5=regP4_5p3 #Se escoge el modelo regP4_5p3 porque los signos de esta regresión tienen mayor sentido
 
 #aplicación teorema FWL(Frisch-Waugh-Lovell)
-library(dplyr)
+library(dplyr)#Siempre llamar esta libreria antes de correr la prueba 
 
-reg_ing<-lm(ln_ing~age+age2+factor(p6210),datosGEIH_P4)
-reg_mujer<-lm(mujer~age+age2+factor(p6210),datosGEIH_P4)
-reg_age_mujer=lm(mujer_age~age+age2+factor(p6210),datosGEIH_P4)
+reg_ing<-lm(ln_ing~age+age_cuad+años_educ+años_educ_cuad+factor(oficio)+exp_pot_cuad+sizeFirm+totalHoursWorked+formal,datosGEIH_P4)
+reg_mujer<-lm(mujer~age+age_cuad+años_educ+años_educ_cuad+factor(oficio)+exp_pot_cuad+sizeFirm+totalHoursWorked+formal,datosGEIH_P4)
+reg_age_mujer=lm(mujer_age~age+age_cuad+años_educ+años_educ_cuad+factor(oficio)+exp_pot_cuad+sizeFirm+totalHoursWorked+formal,datosGEIH_P4)
 
-
-datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals, 
+datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals,
                                          res_mujer=reg_mujer$residuals,
                                          res_age_mujer=reg_age_mujer$residuals)
 

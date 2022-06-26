@@ -1,1 +1,0 @@
-En esta carpeta se encuentran todas las figuras y tablas del PS1
