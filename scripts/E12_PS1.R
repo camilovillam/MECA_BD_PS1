@@ -1,6 +1,7 @@
 
 #Junio 12 de 2022
 
+
 install.packages('GGally')# Se instala un paquete para gráficos
 library(GGally)
 library(stargazer)
@@ -104,6 +105,24 @@ datosGEIH_P2 <- subset(datosGEIH_P2,
                          p6426,
                          p6050
                          ))
+
+#Se crean etiquetas para estas variables:
+
+datosGEIH_P2 <-  apply_labels(datosGEIH_P2,
+                              directorio="id directorio",
+                              secuencia_p="id hogar",
+                              orden="id persona en el hogar",
+                              ingtot="Ingresos totales",
+                              age="Edad",
+                              sex="Sexo",
+                              p6210="Nivel educativo",
+                              p6210s1="Último grado",
+                              oficio="Tipo de oficio",
+                              sizeFirm="Tamaño de la empresa",
+                              formal="Tipo de trabajo",
+                              totalHoursWorked="Total horas de trabajo a la semana",
+                              p6426="Antigüedad en el trabajo actual (meses)",
+                              p6050="Parentezco con el jefe de familia")
 
 #Se hace un resumen de estas variables
 
@@ -340,16 +359,16 @@ datosGEIH_P2$p6426 <- datosGEIH_P2$p6426/12 #Se pasa a años
 
 
 
-
-
 #prueba gráficas de las variables
-install.packages('GGally')# Se instala un paquete para gráficos
-library(GGally)
-ggpairs(datosGEIH_P2)
+
+?ggpairs
+
+#ggpairs(datosGEIH_P2)
 
 #variables númericas: histograma y diagrama de cajas
 ggplot(datosGEIH_P2) + geom_histogram (aes(ingtot))
 ggplot(datosGEIH_P2) + geom_boxplot (aes(ingtot))
+
 
 ggplot(datosGEIH_P2) + geom_histogram (aes(age))
 ggplot(datosGEIH_P2) + geom_boxplot (aes(age))
@@ -399,11 +418,38 @@ datosGEIH_P2$formal <- factor(datosGEIH_P2$formal,
 
 datosGEIH_P2$oficio <- factor(datosGEIH_P2$oficio)
 
+# #Por presentación, cambiamos los nombres de algunas variables:
+# #
+# 
+# colnames(datosGEIH_P2)
+# 
+# colnames(datosGEIH_P2) <- c("directorio",       
+#   "secuencia_p",      
+#   "orden",           
+#   "ingtot",           
+#   "age",              
+#   "sex",             
+#   "nivel_educ",      #p6210     
+#   "max_grad_educ", 	#p6201s1         
+#   "oficio",          
+#   "sizeFirm",         
+#   "formal",           
+#   "totalHoursWorked",
+#   "antig_trab_act",		#p6426            
+#   "parentezco",		#p6050            
+#   "años_educ",       
+#   "exper_pot",        
+#   "dummy_hijos",      
+#   "num_hijos",       
+#   "age_cuad",         
+#   "años_educ_cuad",   
+#   "exp_pot_cuad")
 
 #Tabla descriptiva:
 #Se usa la librería "CreateTableOne" para crear una tabla con todas las variables
 
 Tabla_descr <- CreateTableOne(data = datosGEIH_P2)
+Tabla_descr
 print(Tabla_descr,showAllLevels = TRUE)
 summary(Tabla_descr)
 Tabla_descr_csv <- print(Tabla_descr, exact = "stage", quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
@@ -411,6 +457,7 @@ Tabla_descr_csv <- print(Tabla_descr, exact = "stage", quote = FALSE, noSpaces =
 ## Save to a CSV file
 setwd("~/GitHub/MECA_BD_PS1")
 write.csv(Tabla_descr_csv, file = "./views/tabla_descr.csv")
+
 
 
 
@@ -454,4 +501,5 @@ stargazer(reg_completa,type="text")
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
-
+ggplot(datosGEIH_P2) +
+  geom_point(aes(x=age,y=ingtot))
