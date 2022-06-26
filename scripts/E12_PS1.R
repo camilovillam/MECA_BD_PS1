@@ -342,6 +342,7 @@ porcentaje_na$variable <- factor(porcentaje_na$variable,
                                  levels = orden)
 
 
+
 # Se grafica el % de NA de las diferentes variables de interés
 ggplot(porcentaje_na[1:nrow(porcentaje_na),], 
        aes(y = variable, x = cantidad_na)) +
@@ -561,7 +562,6 @@ ggplot(datosGEIH_P2) + geom_boxplot (aes(años_educ))
 
 ggplot(datosGEIH_P2) + geom_histogram (aes(num_hijos))
 ggplot(datosGEIH_P2) + geom_boxplot (aes(num_hijos))
-
 
 #variables categóricas: diagrama de barras y diagrama de sectores 
 
@@ -837,8 +837,10 @@ ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) +
   labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
 
 #ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) + 
-#geom_point() +
-#labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
+
+  #geom_point() +
+  #labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
+
 
 #Siguiente inciso: usar bootstrap para calcular errores estandar e intervalos de confianza
 #del "peak age" por genero
@@ -900,7 +902,7 @@ peakage_h.fn<-function(datosGEIH_P4,index){
   b3<-coefs[4]
   b4<-coefs[5]
   peak_age_h <- -(b2)/(2*b3) #peak age si es hombre
-  
+
   return(peak_age_h)
 }
 
@@ -946,8 +948,8 @@ reg_age_mujer=lm(mujer_age~age+age2+factor(p6210),datosGEIH_P4)
 
 datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals, 
                                          res_mujer=reg_mujer$residuals,
-                                         res_age_mujer=reg_age_mujer$residuals
-)
+                                         res_age_mujer=reg_age_mujer$residuals)
+
 
 regP4_6<-lm(res_ing~res_mujer+res_age_mujer,datosGEIH_P4)
 stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
@@ -990,7 +992,7 @@ datosGEIH_P5 <- datosGEIH_P5 %>%
   mutate(test_dataset= as.logical(1:nrow(datosGEIH_P5) %in%
                                sample(nrow(datosGEIH_P5),
                                       nrow(datosGEIH_P5)*.3))
-  )
+)
 
 summary(datosGEIH_P5$test_dataset)
 mean(datosGEIH_P5$test_dataset)
@@ -1103,7 +1105,6 @@ which.min(MSE_modelos[,2])
 # outliers, i.e., observations with high leverage driving the results? Are these
 # outliers potential people that the DIAN should look into, or are they just
 # the product of a flawed model?
-  
 
 #Suponiendo que es el modelo 2 (LUEGO SE AJUSTA AL QUE VERDADERAMENTE FUE)
 
@@ -1209,6 +1210,7 @@ model2_CV_K <- train(ingtotob ~ age,
                 trControl = trainControl(method = "cv", number = 5),
                 method = "lm")
 
+
 #Guardo el MSE en la tabla
 MSE_modelos[2,3] <- model2_CV_K$results$RMSE^2
 
@@ -1255,8 +1257,8 @@ for (k in 1:nrow(datosGEIH_P5)){
   
   #Diferencia al cuadrado
   loocv_mat[k,3] <- (loocv_mat[k,1]-loocv_mat[k,2])^2 #Observada-predicha
-  
   }
+
 
 #Estadístico LOOCV: Promedio de todas las diferencias al cuadrado
 loocv_mse <- mean(loocv_mat[1:nrow(datosGEIH_P5),4])
@@ -1277,7 +1279,7 @@ loocv_mse #MSE con LOOCV
 
 #Lo que sí se me ocurre comparar es el MSE del K-Fold con el del LOOCV y los
 #demás modelos
-  
+
 
 MSE_modelos[2,3] #MSE K-fold, K=5
 loocv_mse #MSE con LOOCV
@@ -1289,5 +1291,3 @@ loocv_mse #MSE con LOOCV
 #El porcentaje de error entre uno y otro es de 0,33%.
 #No se justifica el LOOCV por lo intensivo en cómputo.
 
-#Fin del código
-#Línea final
