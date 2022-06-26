@@ -361,15 +361,15 @@ IC_sup_h
 #se utiliza la función factor para crear variables dicotoma de cada categoría 
 #se toma como variable de control: p6210 que indica el nivel de educación
 
-regP4_5<-lm(ln_ing~mujer+age+factor(p6210), data=datosGEIH_P4)
+regP4_5<-lm(ln_ing~mujer+age+age2+factor(p6210), data=datosGEIH_P4)
 summary(regP4_5)
 stargazer(regP4_5,type="text")
 
 #aplicación teorema FWL(Frisch-Waugh-Lovell)
 library(dplyr)
 
-regx<-lm(mujer~age+factor(p6210),datosGEIH_P4)
-regy<-lm(ln_ing~age+factor(p6210),datosGEIH_P4)
+regx<-lm(mujer~age+age2+factor(p6210),datosGEIH_P4)
+regy<-lm(ln_ing~+age+age2+factor(p6210),datosGEIH_P4)
 
 datosGEIH_P4 <- datosGEIH_P4 %>%mutate (res_x_e=regx$residuals,res_y_e=regy$residuals)
 regP4_6<-lm(res_y_e~res_x_e,datosGEIH_P4)
