@@ -270,21 +270,21 @@ nrow(datosGEIH_P2)#Quedan 16397 filas
 
 #Se crea un subconjunto con las variables de interés
 datosGEIH_P2 <- subset(datosGEIH_P2,
-                select=c(directorio,
-                         secuencia_p,
-                         orden,
-                         ingtot,
-                         age,
-                         sex,
-                         p6210,
-                         p6210s1,
-                         oficio,
-                         sizeFirm,
-                         formal,
-                         totalHoursWorked,
-                         p6426,
-                         p6050
-                         ))
+                       select=c(directorio,
+                                secuencia_p,
+                                orden,
+                                ingtot,
+                                age,
+                                sex,
+                                p6210,
+                                p6210s1,
+                                oficio,
+                                sizeFirm,
+                                formal,
+                                totalHoursWorked,
+                                p6426,
+                                p6050
+                       ))
 
 #Se crean etiquetas para estas variables:
 
@@ -339,7 +339,8 @@ porcentaje_na <- rownames_to_column(porcentaje_na, "variable")
 orden <- porcentaje_na$variable[length(porcentaje_na$variable):1]
 
 porcentaje_na$variable <- factor(porcentaje_na$variable,
-                                  levels = orden)
+                                 levels = orden)
+
 
 
 # Se grafica el % de NA de las diferentes variables de interés
@@ -562,7 +563,6 @@ ggplot(datosGEIH_P2) + geom_boxplot (aes(años_educ))
 ggplot(datosGEIH_P2) + geom_histogram (aes(num_hijos))
 ggplot(datosGEIH_P2) + geom_boxplot (aes(num_hijos))
 
-  
 #variables categóricas: diagrama de barras y diagrama de sectores 
 
 ggplot(datosGEIH_P2) + geom_bar (aes(sex)) +
@@ -585,12 +585,12 @@ datosGEIH_P2$sex <- factor(datosGEIH_P2$sex,
                            labels = c("Mujer", "Hombre"))
 
 datosGEIH_P2$sizeFirm <- factor(datosGEIH_P2$sizeFirm,
-                          levels = c(1,2,3,4,5),
-                          labels = c("Independiente",
-                                     "2-5 trabajadores",
-                                     "6-10 trabajadores",
-                                     "11-50 trabajadores",
-                                     "Más de 50 trabajadores"))
+                                levels = c(1,2,3,4,5),
+                                labels = c("Independiente",
+                                           "2-5 trabajadores",
+                                           "6-10 trabajadores",
+                                           "11-50 trabajadores",
+                                           "Más de 50 trabajadores"))
 
 datosGEIH_P2$formal <- factor(datosGEIH_P2$formal,
                               levels = c(0,1),
@@ -837,8 +837,10 @@ ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) +
   labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
 
 #ggplot(datosGEIH_P4, aes(x=age, y=predict(regP4_4),color=mujer)) + 
+
   #geom_point() +
   #labs(x='Edad', y='logartimo ingreso estimado', title='Edad vs. logaritmo ingreso estimado')
+
 
 #Siguiente inciso: usar bootstrap para calcular errores estandar e intervalos de confianza
 #del "peak age" por genero
@@ -945,9 +947,9 @@ reg_age_mujer=lm(mujer_age~age+age2+factor(p6210),datosGEIH_P4)
 
 
 datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals, 
-                                        res_mujer=reg_mujer$residuals,
-                                        res_age_mujer=reg_age_mujer$residuals
-                                        )
+                                         res_mujer=reg_mujer$residuals,
+                                         res_age_mujer=reg_age_mujer$residuals)
+
 
 regP4_6<-lm(res_ing~res_mujer+res_age_mujer,datosGEIH_P4)
 stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
@@ -988,9 +990,9 @@ set.seed(10101) #sets a seed
 
 datosGEIH_P5 <- datosGEIH_P5 %>%
   mutate(test_dataset= as.logical(1:nrow(datosGEIH_P5) %in%
-                                    sample(nrow(datosGEIH_P5),
-                                           nrow(datosGEIH_P5)*.3))
-  )
+                               sample(nrow(datosGEIH_P5),
+                                      nrow(datosGEIH_P5)*.3))
+)
 
 summary(datosGEIH_P5$test_dataset)
 mean(datosGEIH_P5$test_dataset)
@@ -1104,7 +1106,6 @@ which.min(MSE_modelos[,2])
 # outliers potential people that the DIAN should look into, or are they just
 # the product of a flawed model?
 
-
 #Suponiendo que es el modelo 2 (LUEGO SE AJUSTA AL QUE VERDADERAMENTE FUE)
 
 #Lo calculo pero para el Test sample:
@@ -1205,9 +1206,10 @@ MSE_modelos[1,3] <- model1_CV_K$results$RMSE^2
 
 #Cross-validation, model 2:
 model2_CV_K <- train(ingtotob ~ age,
-                     data = datosGEIH_P5,
-                     trControl = trainControl(method = "cv", number = 5),
-                     method = "lm")
+                data = datosGEIH_P5,
+                trControl = trainControl(method = "cv", number = 5),
+                method = "lm")
+
 
 #Guardo el MSE en la tabla
 MSE_modelos[2,3] <- model2_CV_K$results$RMSE^2
@@ -1255,8 +1257,8 @@ for (k in 1:nrow(datosGEIH_P5)){
   
   #Diferencia al cuadrado
   loocv_mat[k,3] <- (loocv_mat[k,1]-loocv_mat[k,2])^2 #Observada-predicha
-  
-}
+  }
+
 
 #Estadístico LOOCV: Promedio de todas las diferencias al cuadrado
 loocv_mse <- mean(loocv_mat[1:nrow(datosGEIH_P5),4])
@@ -1288,3 +1290,4 @@ loocv_mse #MSE con LOOCV
 #El de K-fold, es menos de 10 segundos.
 #El porcentaje de error entre uno y otro es de 0,33%.
 #No se justifica el LOOCV por lo intensivo en cómputo.
+
