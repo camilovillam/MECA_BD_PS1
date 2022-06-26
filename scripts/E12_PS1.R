@@ -955,4 +955,3 @@ stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 #intento 3 de merge
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
-
