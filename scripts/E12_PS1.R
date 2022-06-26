@@ -754,12 +754,3 @@ eta_mod_f<-function(GIH,index,
 }
 
 eta_mod_f(GIH, 1:n)
-
-
-# Punto 4: modelo brecha de ingresos --------------------------------------
-
-
-
-
-# Punto 5: modelo de predicción de ingresos -------------------------------
-
