@@ -674,6 +674,8 @@ stargazer(reg_completa,type="text")
 # Punto 3: modelo ingresos por edad ---------------------------------------
 ##prueba para iniciar
 
+jorgito
+
 #Se instalan los paquetes que pueden utlizarse durante el ejercicio
 install.packages("pacman")
 
