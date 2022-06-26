@@ -5,11 +5,9 @@ install.packages('GGally')# Se instala un paquete para gráficos
 library(GGally)
 library(stargazer)
 library(tidyverse)
-
 library(tableone)
 
 # Punto 1: adquisición de datos -------------------------------------------
-
 
 install.packages("rvest")
 
@@ -91,11 +89,8 @@ data_control[1,7] <- 0
 
 #Inicializamos una lista del tamaño que necesito 
 
-# (esto lo puedo mejorar después)
-
-# page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
-# tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
-
+page_list <- vector("list",10)
+tabla_page_list <- vector("list",10)
 
 page_list <- vector("list",10)
 tabla_page_list <- vector("list",10)
@@ -760,10 +755,11 @@ eta_mod_f<-function(GIH,index,
 
 eta_mod_f(GIH, 1:n)
 
+
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
 
 
-# Punto 5: modelo de predicción de ingresos -------------------------------
 
+# Punto 5: modelo de predicción de ingresos -------------------------------
 
