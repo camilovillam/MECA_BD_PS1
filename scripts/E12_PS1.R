@@ -501,5 +501,4 @@ stargazer(reg_completa,type="text")
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
-ggplot(datosGEIH_P2) +
-  geom_point(aes(x=age,y=ingtot))
+
