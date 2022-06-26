@@ -245,10 +245,13 @@ datosGEIH_P4 <- datosGEIH_P4 %>% mutate(age2 = age*age)
 #Reviso los valores de las variables antes de correr la regresión
 datosGEIH_P4 %>% select (age,age2)
 
+#Se crea una variable de interacción entre la edad y la variable dicotoma mujer
+datosGEIH_P4 <- datosGEIH_P4 %>% mutate(mujer_age = age*mujer)
+
 #Se prueban  regresiones
 regP4_2<-lm(ln_ing~mujer+age, data=datosGEIH_P4)
 regP4_3<-lm(ln_ing~mujer+age+age2, data=datosGEIH_P4)
-regP4_4<-lm(ln_ing~mujer+age+age2+(mujer*age), data=datosGEIH_P4)
+regP4_4<-lm(ln_ing~mujer+age+age2+mujer_age, data=datosGEIH_P4)
 
 #Se utiliza stargazer para viasualizar las regresiones
 install.packages("stargazer")
@@ -361,19 +364,25 @@ IC_sup_h
 #se utiliza la función factor para crear variables dicotoma de cada categoría 
 #se toma como variable de control: p6210 que indica el nivel de educación
 
-regP4_5<-lm(ln_ing~mujer+age+age2+factor(p6210), data=datosGEIH_P4)
+regP4_5<-lm(ln_ing~mujer+age+age2+mujer_age+factor(p6210), data=datosGEIH_P4)
 summary(regP4_5)
 stargazer(regP4_5,type="text")
 
 #aplicación teorema FWL(Frisch-Waugh-Lovell)
 library(dplyr)
 
-regx<-lm(mujer~age+age2+factor(p6210),datosGEIH_P4)
-regy<-lm(ln_ing~+age+age2+factor(p6210),datosGEIH_P4)
+reg_ing<-lm(ln_ing~age+age2+factor(p6210),datosGEIH_P4)
+reg_mujer<-lm(mujer~age+age2+factor(p6210),datosGEIH_P4)
+reg_age_mujer=lm(mujer_age~age+age2+factor(p6210),datosGEIH_P4)
 
-datosGEIH_P4 <- datosGEIH_P4 %>%mutate (res_x_e=regx$residuals,res_y_e=regy$residuals)
-regP4_6<-lm(res_y_e~res_x_e,datosGEIH_P4)
-stargazer(regP4_5,regP4_6,type="text")
+
+datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals, 
+                                        res_mujer=reg_mujer$residuals,
+                                        res_age_mujer=reg_age_mujer$residuals
+                                        )
+
+regP4_6<-lm(res_ing~res_mujer+res_age_mujer,datosGEIH_P4)
+stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
