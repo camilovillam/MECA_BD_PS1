@@ -203,14 +203,8 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
-#PRUEBA PARA UNIR RAMAS DESACTUALIZADAS 
+
 
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
-# Aquí inserto el código del punto 5
-# Modelo predictivo
-# Revisar si hay conflicto con las secciones que las otras personas
-# insertan o si solamente actualiza las líneas nuevas.
-
-# Código del modelo predictivo viene acá.
