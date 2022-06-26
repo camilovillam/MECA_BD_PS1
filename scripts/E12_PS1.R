@@ -956,6 +956,7 @@ stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 
 #intento 3 de merge
 
+
 # Punto 5: modelo de predicción de ingresos -------------------------------
 
 
@@ -963,18 +964,16 @@ stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 
 
 setwd("~/GitHub/MECA_BD_PS1")
-datosGEIH_P5 <-readRDS("./stores/datosGEIH_complete.rds")
+#datosGEIH_P5 <-readRDS("./stores/datosGEIH_complete.rds")
 
+datosGEIH_P5 <- datosGEIH_P2
 
-#Por ahora, elimino todos los NA en Ingtotob
-#Luego se debe hacer un tratamiento mejor
+# 
+# nrow(datosGEIH_P5)
+# datosGEIH_P5 <- subset(datosGEIH_P5, !is.na(ingtot))
+# nrow(datosGEIH_P5)
 
-nrow(datosGEIH_P5)
-datosGEIH_P5 <- subset(datosGEIH_P5, !is.na(ingtotob))
-nrow(datosGEIH_P5)
-
-
-datosGEIH_P5$ln_ing <- log(datosGEIH_P5$ingtotob)
+# datosGEIH_P5$ln_ing <- log(datosGEIH_P5$ingtot)
 
 
 # Enunciado:
@@ -1001,71 +1000,40 @@ test <- datosGEIH_P5[datosGEIH_P5$test_dataset==T,]
 training <- datosGEIH_P5[datosGEIH_P5$test_dataset==F,]
 
 
-
 # i. Estimate a model that only includes a constant. This will be the benchmark.
 
+#Creamos una lista vacía en donde guardaremos las regresiones de los modelos:
 
-model1<-lm(ingtotob~1,data=training)
-summary(model1)
-stargazer(model1,type="text")
+modelos_P5 <- vector("list",15)
 
-coef(model1)
-mean(training$ingtotob) #aún falta tratar los NA
+modelos_P5[[1]]<-lm(ingtot~1,data=training)
+summary(modelos_P5[[1]])
+stargazer(modelos_P5[[1]],type="text")
+
+coef(modelos_P5[[1]])
+mean(training$ingtot)
 
 
 #Se predice el modelo:
-test$model1 <- predict(model1,newdata = test)
+test$model5_1 <- predict(modelos_P5[[1]],newdata = test)
+
 
 #Se calcula el MSE:
 
 #Guardo los MSE de los diferentes modelos en una matriz,
 #para compararlos al final.
 
-MSE_modelos <- matrix(rep(0,30),nrow=10,ncol=3)
+MSE_modelos <- matrix(rep(0,45),nrow=15,ncol=3)
 colnames(MSE_modelos) <- c("Modelo","MSE","MSE_CV_5-fold")
 
 MSE_modelos[1,1]=1
-MSE_modelos[1,2] <- with(test,mean((ingtotob-model1)^2))
+MSE_modelos[1,2] <- with(test,mean((ingtot-model5_1)^2))
 
 
 
-# ii. Estimate again your previous models
+# ii. Estimate again your previous models.
 
-#Aquí es necesario tomar los modelos previos. ¿Cuáles son?
-
-#Ejemplo: modelo sencillo con solo edad
-
-
-
-#MODELO 2:
-model2 <- lm(ingtotob~age,data=training)
-
-#Se predice el modelo:
-test$model2 <- predict(model2,newdata = test)
-
-#Se calcula el MSE:
-
-MSE_modelos[2,1]=2
-MSE_modelos[2,2] <- with(test,mean((ingtotob-model2)^2))
-
-stargazer(model1,model2,type="text")
-
-
-#Para cada modelo, se sigue el mismo procedimiento anterior.
-
-#MODELO N:
-modelN<-lm(ingtotob~1,data=training)
-
-#Se predice el modelo:
-test$modelN <- predict(modelN,newdata = test)
-
-#Se calcula el MSE:
-
-MSE_modelos[N,1]=N
-MSE_modelos[N,2] <- with(test,mean((ingtotob-modelN)^2))
-
-
-
+#(Los incisos ii y iii se desarrollan en conjunto, ver adelante)
 
 # iii. In the previous sections, the estimated models had different
 # transformations of the dependent variable. At this point, explore other
@@ -1073,18 +1041,77 @@ MSE_modelos[N,2] <- with(test,mean((ingtotob-modelN)^2))
 # include polynomial terms of certain controls or interactions of these. Try at
 # least five (5) models that are increasing in complexity.
 
-#Igual a la sección anterior:
+#Los modelos que usaremos en este punto son los siguientes:
 
-#MODELO N:
-modelN<-lm(ingtotob~1,data=training)
+#Modelos previamente utilizados (inciso 5.a.ii)
 
-#Se predice el modelo:
-test$modelN <- predict(modelN,newdata = test)
+#Modelo 1: ingtot ~ 1
+#Modelo 2: ingtot ~ age
+#Modelo 3: ingtot ~ age + age^2
+#Modelo 4: ingtot ~ mujer
+#Modelo 5: ingtot ~ mujer + age
+#Modelo 6: ingtot ~ mujer + age + age^2
+#Modelo 7: ingtot ~ mujer + age + age^2 + mujer:age
 
-#Se calcula el MSE:
 
-MSE_modelos[N,1]=N
-MSE_modelos[N,2] <- with(test,mean((ingtotob-modelN)^2))
+#Modelos nuevos y nuevas formas funcionales (inciso 5.a.iii)
+
+#Modelo 8: ingtot ~ (modelo múltiple, con todo, no usado pero como referencia)
+#Modelo 9:
+#Modelo 10:
+#Modelo 11:
+#Modelo 12:
+#Modelo 13:
+#Modelo 14:
+#Modelo 15:
+
+
+#Se estiman los modelos:
+modelos_P5[[2]] <- lm(ingtot~age,data=training)
+modelos_P5[[3]]<- lm(ingtot~age+age_cuad,data=training)
+modelos_P5[[4]] <- lm(ingtot~age,data=training)
+modelos_P5[[5]] <- lm(ingtot~age,data=training)
+modelos_P5[[6]] <- lm(ingtot~age,data=training)
+modelos_P5[[7]] <- lm(ingtot~age,data=training)
+
+modelos_P5[[8]] <- lm(ingtot ~ 
+                           age + 
+                           age_cuad +
+                           sex +
+                           años_educ +
+                           años_educ_cuad +
+                           oficio +
+                           sizeFirm +
+                           formal +
+                           totalHoursWorked +
+                           p6426 +
+                           num_hijos+
+                           sex:num_hijos,
+                         data=training)
+
+modelos_P5[[9]] <- lm(ingtot~age,data=training)
+modelos_P5[[10]] <- lm(ingtot~age,data=training)
+modelos_P5[[11]] <- lm(ingtot~age,data=training)
+modelos_P5[[12]] <- lm(ingtot~age,data=training)
+modelos_P5[[13]] <- lm(ingtot~age,data=training)
+modelos_P5[[14]] <- lm(ingtot~age,data=training)
+modelos_P5[[15]] <- lm(ingtot~age,data=training)
+
+
+#Con los modelos estimados, se puede hacer un bucle para predecir los modelos
+#y calcular el MSE.
+
+
+for(i in 1:15){
+  #Predicción:
+  test[[paste0("model5_",i)]] <- predict(modelos_P5[[i]],newdata = test)
+  
+  #Cálculo del MSE:
+  MSE_modelos[i,1] <- i
+  MSE_modelos[i,2] <- 
+    with(test,mean((ingtot-eval(as.name(paste0("model5_",i))))^2))
+}
+
 
 
 # iv. Report and compare the average prediction error of all the models that
@@ -1097,6 +1124,9 @@ stargazer(MSE_modelos,type="text")
 #Encuentra el número del modelo con el menor MSE:
 which.min(MSE_modelos[,2])
 
+print(paste0("El modelo con el menor MSE es el # ",
+             which.min(MSE_modelos[,2]),". El MSE de dicho modelo es ",
+             MSE_modelos[which.min(MSE_modelos[,2]),2]))
 
 
 
@@ -1191,7 +1221,8 @@ ggplot() +
 #b. Repeat the previous point but use K-fold cross-validation.
 #Comment on similarities/differences of using this approach
 
-#Se debe repetir para todos los modelos de regresión del punto anterior...
+#PENDIENTE: hacerlo en FOR para repetirlo para todos los modelos de regresión
+#del punto anterior...!!
 
 
 #Cross-validation, model 1:
@@ -1220,6 +1251,7 @@ model2_CV_K <- train(ingtotob ~ age,
                      data = datosGEIH_P5,
                      trControl = trainControl(method = "cv", number = 5),
                      method = "lm")
+
 
 
 #c. LOOCV. With your preferred predicted model (the one with the lowest
