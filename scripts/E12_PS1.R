@@ -1288,3 +1288,5 @@ loocv_mse #MSE con LOOCV
 #El de K-fold, es menos de 10 segundos.
 #El porcentaje de error entre uno y otro es de 0,33%.
 #No se justifica el LOOCV por lo intensivo en cómputo.
+
+#Fin del código
