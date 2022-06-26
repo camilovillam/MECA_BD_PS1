@@ -674,9 +674,8 @@ stargazer(reg_completa,type="text")
 # Punto 3: modelo ingresos por edad ---------------------------------------
 ##prueba para iniciar
 
-jorgito
 
-#Se instalan los paquetes que pueden utlizarse durante el ejercicio
+#Se instalan los paquetes que puedan utlizarse durante el ejercicio
 install.packages("pacman")
 
 require(pacman)
@@ -685,10 +684,10 @@ p_load(rio,
        skimr, 
        caret,
        rvest)
-##en este paso se carga la base de datos
-GIH<- import("https://gitlab.com/Lectures-R/bd-meca-2022-summer/lecture-01/-/raw/main/data/GEIH_sample1.Rds")
-browseURL("https://ignaciomsarmiento.github.io/GEIH2018_sample/dictionary.html")
+##en este paso se carga la base de datos una vez limpiada y con las variables seleccionadas de interés
+setwd("/Users/jorgeeduardogarcia/Desktop/BIG_DATA/MECA_BD_PS1")
 
+Datos_P3<-readRDS("./stores/datosGEIH_P2.rds")
 ##ahora se hace una descripción del contenido de la base de datos y de la variable y_inglab (ingreso laboral mensual, incluidos propinas y comisiones) 
 summary("y_ingLab_m, na.rm=T")
 summary(GIH$y_ingLab_m)
