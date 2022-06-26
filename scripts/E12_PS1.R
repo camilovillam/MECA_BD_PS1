@@ -62,6 +62,7 @@ datosGEIH_P4 <- datosGEIH_P4[is.finite(datosGEIH_P4$ln_ing), ]
 regP4_1<-lm(ln_ing~mujer,data=datosGEIH_P4)
 summary(regP4_1)
 
+
 #Siguiente inciso: Estimación y grafica del perfil de edad versus ingresos pronosticado por género
 
 #Se estima primero la regresión del logaritmo de ingreso
@@ -211,6 +212,6 @@ datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals,
 regP4_6<-lm(res_ing~res_mujer+res_age_mujer,datosGEIH_P4)
 stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 
-# Punto 5: modelo de predicción de ingresos -------------------------------
 
+# Punto 5: modelo de predicción de ingresos -------------------------------
 
