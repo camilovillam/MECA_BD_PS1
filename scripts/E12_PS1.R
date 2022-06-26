@@ -952,5 +952,6 @@ datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals,
 regP4_6<-lm(res_ing~res_mujer+res_age_mujer,datosGEIH_P4)
 stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 
+#intento 3 de merge
 
 # Punto 5: modelo de predicción de ingresos -------------------------------
