@@ -97,6 +97,7 @@ data_control[1,7] <- 0
 # page_list <- list(page1,page1,page1,page1,page1,page1,page1,page1,page1,page1)
 # tabla_page_list <- list(tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1,tabla_page1)
 
+
 page_list <- vector("list",10)
 tabla_page_list <- vector("list",10)
 
@@ -680,10 +681,11 @@ stargazer(reg_completa,type="text")
 
 
 
+
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
 
 
-# Punto 5: modelo de predicción de ingresos -------------------------------
 
+# Punto 5: modelo de predicción de ingresos -------------------------------
 
