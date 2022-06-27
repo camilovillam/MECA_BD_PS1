@@ -785,6 +785,7 @@ results <- boot(data = Datos_P3, eta_mod.fn, R = 1000)
 results
 
 ##INTERVALOS DE CONFIANZA
+t.test(ingtot, conf.level = 0.95)
 
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
