@@ -683,7 +683,8 @@ p_load(rio,
        tidyverse, 
        skimr, 
        caret,
-       rvest)
+       rvest,
+       stargazer)
 ##en este paso se carga la base de datos una vez limpiada y con las variables seleccionadas de interés
 setwd("/Users/jorgeeduardogarcia/Desktop/BIG_DATA/MECA_BD_PS1")
 
@@ -712,17 +713,21 @@ age2<-age^2
 ##Ahora se hace la regresión, donde y=ingreso laboral mensual y x=edad+edad^2. Luego se hace 
 reg_1<-lm(ingtot~age+age2,Datos_P3)
 summary(reg_1)
-
 #Ahora exportamos la regresión
-install.packages("stargazer")
-require("stargazer")
 stargazer(reg_1, type="text", out="regresion.htm")
 
+#Regresión_2 En esta solo queremos ver el comportamiento del ingreso cuando el empleado está vinculado formalmente
+reg_2<-lm(ingtot~age+age2+formal,Datos_P3)
+summary(reg_2)
+stargazer(reg_2, type="text", out="regresion_2.htm")
+
+#Regresión_3 En esta solo queremos ver el comportamiento del ingreso cuando el empleado es informal
+reg_3<-lm(ingtot~age+age2+informal,Datos_P3)
 
 ##Ahora se trae la librería tidiverse para hacer el plot de la predicción edad-ingreso
 require("tidiverse")
-GIH<-data.frame(age=runif(30,18,80))
-GIH<- GIH %>% mutate(age2=age^2,
+Datos_P3<-data.frame(age=runif(30,18,80))
+Datos_P3<- GIH %>% mutate(age2=age^2,
                      y_ingLab_m=rnorm(30,mean=12+0.06*age-0.001*age2))                
 reg_1<-lm(y_ingLab_m~age+age2,GIH)
 ggplot(GIH , mapping = aes(x = age , y = predict(reg_1))) +
