@@ -779,6 +779,13 @@ eta_mod.fn <- function(data, index){
 }
 n<- nrow(Datos_P3)
 eta_mod.fn(Datos_P3, 1:n)
+
+set.seed(00)
+results <- boot(data = Datos_P3, eta_mod.fn, R = 1000)
+results
+
+##INTERVALOS DE CONFIANZA
+
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
 
