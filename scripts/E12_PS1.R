@@ -710,67 +710,75 @@ age2
 age2<-age^2
 
 ##
-##Ahora se hace la regresión, donde y=ingreso laboral mensual y x=edad+edad^2. Luego se hace 
+##Ahora se hace la regresión, donde y=ingreso laboral mensual y x=edad+edad^2.
 reg_1<-lm(ingtot~age+age2,Datos_P3)
 summary(reg_1)
 #Ahora exportamos la regresión
 stargazer(reg_1, type="text", out="regresion.htm")
+
+#Ahora creamos la variable formal e informal para luego correr las regresiones enfocadas en cada segmento
+
+Datos_P3<-Datos_P3 %>% mutate(formal=relevel (formal, ref="Formal"))
 
 #Regresión_2 En esta solo queremos ver el comportamiento del ingreso cuando el empleado está vinculado formalmente
 reg_2<-lm(ingtot~age+age2+formal,Datos_P3)
 summary(reg_2)
 stargazer(reg_2, type="text", out="regresion_2.htm")
 
+
 #Regresión_3 En esta solo queremos ver el comportamiento del ingreso cuando el empleado es informal
-reg_3<-lm(ingtot~age+age2+informal,Datos_P3)
+Datos_P3<-Datos_P3 %>% mutate(formal=relevel (formal, ref="Informal"))
+reg_3<-lm(ingtot~age+age2+formal,Datos_P3)
+summary(reg_3)
+stargazer(reg_3, type="text", out="regresion_3.htm")
+
 
 ##Ahora se trae la librería tidiverse para hacer el plot de la predicción edad-ingreso
 require("tidiverse")
 Datos_P3<-data.frame(age=runif(30,18,80))
-Datos_P3<- GIH %>% mutate(age2=age^2,
-                     y_ingLab_m=rnorm(30,mean=12+0.06*age-0.001*age2))                
-reg_1<-lm(y_ingLab_m~age+age2,GIH)
-ggplot(GIH , mapping = aes(x = age , y = predict(reg_1))) +
-  geom_point(col = "red" , size = 0.5)
+Datos_P3<- Datos_P3 %>% mutate(age2=age^2,
+                    ingtot=rnorm(30,mean=12+0.06*age-0.001*age2))                
+reg_1<-lm(ingtot~age+age2,Datos_P3)
+ggplot(Datos_P3 , mapping = aes(x = age , y = predict(reg_1))) +
+  geom_point(col = "red" , size = 0.8)
 
 #otra opción
-ggplot(GIH, aes(x=age, y=predict(reg_1)))+geom_point() 
-+ labs(x="y_ingLab_m",y="edad", title="grafico")+geom_point(col="red", size=0.5)
+ggplot(Datos_P3, aes(x=age, y=predict(reg_1)))+geom_point() 
++ labs(x="ingtot",y="edad", title="grafico")+geom_point(col="red", size=0.5)
 +geom_smooth(method="lm")
 
-#########
 
+#########
+ #Se instala bootstrap p
 install.packages("boot", dep=TRUE)
 library(boot)
 
-plot(hist(eta_reg1))
-mean(eta_reg1)
+#se asignan los coeficientes para hallar el máximo
 reg_1
 coefs<-reg_1$coef
 coefs
-b0<-coefs[0]
 b1<-coefs[1]
 b2<-coefs[2]
+b3<-coefs[3]
 
-peak_age_a<-b1/2*(b2)
+#se halla el máximo de salario respecto de la edad
+peak_age_a<-b2/(2*b3)
 peak_age_a
 
-results<-boot(GIH, peak_age_a, R=1000)
-
-eta_mod_f<-function(GIH,index,
-                    age_bar=mean(GIH$age)
-                    age2_bar=mean(GIH$age2)){
-  f<-lm(y_ingLab_m~age+age2,GIH,subset=index)
-  coefs<-f$coefficients
-  b2<-coefs[2]
-  b3<-coefs[3]
-  elastpt<-b2+2*b3*age_bar+b3*age2_bar
-  return(elastpt)
+#se hace el bootstrap para calcular los errores estándar
+eta_mod.fn <- function(data, index){
+  f <- lm(ingtot~age + age2, data, subset = index)
+  
+  coefs <- f$coef
+  
+  b2 <- coefs[2]
+  b3 <- coefs[3]
+  
+  peak_age <- -b2/(2*b3)
+  return(peak_age)
 }
-
-eta_mod_f(GIH, 1:n)
-
-
+n<- nrow(Datos_P3)
+eta_mod.fn(Datos_P3, 1:n)
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
 
