@@ -787,6 +787,13 @@ results
 ##INTERVALOS DE CONFIANZA
 t.test(ingtot, conf.level = 0.95)
 
+#otra forma
+IC_inf <- peak_age_a - 1.96*1430.835
+IC_sup <- peak_age_a + 1.96*1430.835
+
+IC_inf
+IC_sup
+
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
 
