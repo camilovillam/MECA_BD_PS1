@@ -723,26 +723,29 @@ Datos_P3<-Datos_P3 %>% mutate(formal=relevel (formal, ref="Formal"))
 #Regresión_2 En esta solo queremos ver el comportamiento del ingreso cuando el empleado está vinculado formalmente
 reg_2<-lm(ingtot~age+age2+formal,Datos_P3)
 summary(reg_2)
-stargazer(reg_2, type="text", out="regresion_2.htm")
-
 
 #Regresión_3 En esta solo queremos ver el comportamiento del ingreso cuando el empleado es informal
 Datos_P3<-Datos_P3 %>% mutate(formal=relevel (formal, ref="Informal"))
 reg_3<-lm(ingtot~age+age2+formal,Datos_P3)
 summary(reg_3)
-stargazer(reg_3, type="text", out="regresion_3.htm")
+stargazer(reg_2,reg_3, type="text", out="regresion_2_3.htm")
 
 
 ##Ahora se trae la librería tidiverse para hacer el plot de la predicción edad-ingreso
 require("tidiverse")
-Datos_P3<-data.frame(age=runif(30,18,80))
+
 Datos_P3<- Datos_P3 %>% mutate(age2=age^2,
                     ingtot=rnorm(30,mean=12+0.06*age-0.001*age2))                
 reg_1<-lm(ingtot~age+age2,Datos_P3)
 ggplot(Datos_P3 , mapping = aes(x = age , y = predict(reg_1))) +
   geom_point(col = "red" , size = 0.8)
 
-#otra opción
+##Otra forma de hacer el plot
+ggplot(Datos_P3, aes(x=age, y=predict(reg_1))) + 
+  geom_point() +
+  labs(x='Edad', y='ingreso estimado', title='Edad vs. ingreso estimado')
+
+#otra opción de hacer el plot
 ggplot(Datos_P3, aes(x=age, y=predict(reg_1)))+geom_point() 
 + labs(x="ingtot",y="edad", title="grafico")+geom_point(col="red", size=0.5)
 +geom_smooth(method="lm")
@@ -762,7 +765,7 @@ b2<-coefs[2]
 b3<-coefs[3]
 
 #se halla el máximo de salario respecto de la edad
-peak_age_a<-b2/(2*b3)
+peak_age_a<--b2/(2*b3)
 peak_age_a
 
 #se hace el bootstrap para calcular los errores estándar
@@ -777,6 +780,7 @@ eta_mod.fn <- function(data, index){
   peak_age <- -b2/(2*b3)
   return(peak_age)
 }
+##Ahora se muestran los resultados de la función de las líneas anteriores
 n<- nrow(Datos_P3)
 eta_mod.fn(Datos_P3, 1:n)
 
@@ -785,11 +789,9 @@ results <- boot(data = Datos_P3, eta_mod.fn, R = 1000)
 results
 
 ##INTERVALOS DE CONFIANZA
-t.test(ingtot, conf.level = 0.95)
 
-#otra forma
-IC_inf <- peak_age_a - 1.96*1430.835
-IC_sup <- peak_age_a + 1.96*1430.835
+IC_inf <- peak_age_a - 1.96*5.790346
+IC_sup <- peak_age_a + 1.96*5.790346
 
 IC_inf
 IC_sup
