@@ -1,21 +1,43 @@
-#Junio 12 de 2022
+#Big Data and Machine Learning for Applied Economics
+#MEcA - Uniandes
+#Problem Set 1
+#Equipo 12
+
+#Junio 27, 2022
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Preliminares: preparación de espacio de trabajo y librerías -------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+install.packages("rvest")
+install.packages("fabricatr")
+install.packages("stargazer")
 install.packages('GGally')# Se instala un paquete para gráficos
+install.packages("pacman")
+
+library(rvest)
+library(tidyverse)
+library(fabricatr)
+library(stargazer)
+library(caret)
 library(GGally)
 library(stargazer)
 library(tidyverse)
 library(tableone)
 library(caret)
+require(pacman)
+p_load(rio, 
+       tidyverse, 
+       skimr, 
+       caret,
+       rvest,
+       stargazer)
 
-# Punto 1: adquisición de datos -------------------------------------------
 
-install.packages("rvest")
-
-#Usar rvest / cargar librería
-
-library(rvest)
-library(tidyverse)
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# PUNTO 1: ADQUISICIÓN DE DATOS -------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Cargar la página inicial del taller
 # Esto crea la variable page1
@@ -193,7 +215,11 @@ saveRDS(datosGEIH,"./stores/datosGEIH_complete.rds")
 
 
 
-# Punto 2: limpieza de datos ----------------------------------------------
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# PUNTO 2: LIMPIEZA DE DATOS ----------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 install.packages("pacman")
 require(pacman)
@@ -287,24 +313,6 @@ datosGEIH_P2 <- subset(datosGEIH_P2,
                                 p6050
                        ))
 
-#Se crean etiquetas para estas variables:
-
-datosGEIH_P2 <-  apply_labels(datosGEIH_P2,
-                              directorio="id directorio",
-                              secuencia_p="id hogar",
-                              orden="id persona en el hogar",
-                              ingtot="Ingresos totales",
-                              age="Edad",
-                              sex="Sexo",
-                              p6210="Nivel educativo",
-                              p6210s1="Último grado",
-                              oficio="Tipo de oficio",
-                              sizeFirm="Tamaño de la empresa",
-                              formal="Tipo de trabajo",
-                              totalHoursWorked="Total horas de trabajo a la semana",
-                              p6426="Antigüedad en el trabajo actual (meses)",
-                              p6050="Parentezco con el jefe de familia")
-
 #Se hace un resumen de estas variables
 
 summary(datosGEIH_P2)
@@ -354,83 +362,6 @@ ggplot(porcentaje_na[1:nrow(porcentaje_na),],
   theme_classic() +
   labs(x = "Porcentaje de NAs", y = "Variables") +
   scale_x_continuous(labels = scales::percent, limits = c(0, 1))
-
-# 
-# ggplot(porcentaje_na[51:100,], 
-#        aes(y = variable, x = cantidad_na)) +
-#   geom_bar(stat = "identity", fill = "darkblue") +
-#   geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
-#             colour = "white", position = "dodge", hjust = 1.3,
-#             size = 2, fontface = "bold") +
-#   theme_classic() +
-#   labs(x = "Porcentaje de NAs", y = "Variables") +
-#   scale_x_continuous(labels = scales::percent, limits = c(0, 1))
-# 
-# ggplot(porcentaje_na[101:nrow(porcentaje_na),], 
-#        aes(y = variable, x = cantidad_na)) +
-#   geom_bar(stat = "identity", fill = "darkblue") +
-#   geom_text(aes(label = paste0(round(100*cantidad_na, 1), "%")),
-#             colour = "white", position = "dodge", hjust = 1.3,
-#             size = 2, fontface = "bold") +
-#   theme_classic() +
-#   labs(x = "Porcentaje de NAs", y = "Variables") +
-#   scale_x_continuous(labels = scales::percent, limits = c(0, 1))
-# 
-
-
-##Filtrado o imputación:
-
-#NO QUEDAN REGISTROS DE NA EN LAS VARIABLES
-#SE DEJA TODO ESTA SECCIÓN COMENTADA
-
-
-# #Después de escoger las variables de interés,
-# #podemos definir la estrategia de filtrado:
-# 
-# # a. Eliminar los NA en las variables de interés
-# # b. Imputar mediana 
-# # c. Imputar media
-# 
-# 
-# # ##Se eliminan las variables que tienen más del 5% en NAS
-# # filtro <- porcentaje_na$cantidad_na > 0.05
-# # variables_eliminar <- porcentaje_na$variable[filtro]
-# # k0 <- ncol(datosGEIH_P2)
-# # datosGEIH_P2 <- (datosGEIH_P2) %>%
-# #   select(-variables_eliminar)
-# # k1 <- ncol(datosGEIH_P2)
-# # print(paste("Se eliminarion", k0-k1, "variables. Ahora la base tiene", k1, "columnas."))
-# 
-# 
-# #Un primer filtro, general, es dejar solo los registros completos:
-# 
-# nrow(datosGEIH_P2)
-# datosGEIH_P2_sin_NA <- datosGEIH_P2[complete.cases(datosGEIH_P2), ]
-# nrow(datosGEIH_P2)
-# 
-# #Se pasa de 24.054 a 16.397 observaciones. Se eliminan 7657 observaciones.
-# 
-# 
-# #Una segunda estrategia es imputar la mediana de cada variable a las faltantes:
-# 
-# # Número de filas
-# nrow(datosGEIH_P2)#Ahora tiene 16397 filas
-# 
-# # Número de columnas
-# ncol(datosGEIH_P2)#Ahora tiene 63 columnas
-# 
-# #Se vuelve aanalizar el número y el porcentaje de NAs por variable.
-# 
-# cantidad_na <- sapply(datosGEIH_P2, function(x) sum(is.na(x)))
-# cantidad_na <- data.frame(cantidad_na)
-# porcentaje_na <- cantidad_na/nrow(datosGEIH_P2)
-# 
-# # Porcentaje de observaciones faltantes. 
-# p <- mean(porcentaje_na[,1])
-# print(paste0("En promedio el ", round(p*100, 2), "% de las entradas están vacías"))
-# #En promedio el 0.03% de las entradas están vacías"
-# 
-
 
 
 #Cálculo de variables adicionales:
@@ -599,32 +530,7 @@ datosGEIH_P2$formal <- factor(datosGEIH_P2$formal,
 
 datosGEIH_P2$oficio <- factor(datosGEIH_P2$oficio)
 
-# #Por presentación, cambiamos los nombres de algunas variables:
-# #
-# 
-# colnames(datosGEIH_P2)
-# 
-# colnames(datosGEIH_P2) <- c("directorio",       
-#   "secuencia_p",      
-#   "orden",           
-#   "ingtot",           
-#   "age",              
-#   "sex",             
-#   "nivel_educ",      #p6210     
-#   "max_grad_educ", 	#p6201s1         
-#   "oficio",          
-#   "sizeFirm",         
-#   "formal",           
-#   "totalHoursWorked",
-#   "antig_trab_act",		#p6426            
-#   "parentezco",		#p6050            
-#   "años_educ",       
-#   "exper_pot",        
-#   "dummy_hijos",      
-#   "num_hijos",       
-#   "age_cuad",         
-#   "años_educ_cuad",   
-#   "exp_pot_cuad")
+
 
 #Tabla descriptiva:
 #Se usa la librería "CreateTableOne" para crear una tabla con todas las variables
@@ -671,21 +577,13 @@ stargazer(reg_completa,type="text")
 #¿Qué hacer con los outliers?
 
 
+                      
 
-# Punto 3: modelo ingresos por edad ---------------------------------------
-##prueba para iniciar
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# PUNTO 3: MODELO DE INGRESOS POR EDAD------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-#Se instalan los paquetes que puedan utlizarse durante el ejercicio
-install.packages("pacman")
-
-require(pacman)
-p_load(rio, 
-       tidyverse, 
-       skimr, 
-       caret,
-       rvest,
-       stargazer)
 ##en este paso se carga la base de datos una vez limpiada y con las variables seleccionadas de interés
 setwd("/Users/jorgeeduardogarcia/Desktop/BIG_DATA/MECA_BD_PS1")
 
@@ -788,9 +686,12 @@ IC_sup <- peak_age_a + 1.96*5.790346
 IC_inf
 IC_sup
 
-# Punto 4: modelo brecha de ingresos --------------------------------------
-
-
+                      
+                      
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                      
+# Punto 4: MODELO BRECHA DE INGRESOS -------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                      
 #Se toma la tabla llamada datosGEIH y se crea una copia por si acaso
 
 setwd("C:\\Users\\Lore Molano\\Documents\\MECA_BD_PS1") #ajustar dirección al inicio, dependiendo del pc
@@ -1034,7 +935,6 @@ datosGEIH_P4 <- datosGEIH_P4 %>% mutate (res_ing=reg_ing$residuals,
 regP4_6<-lm(res_ing~res_mujer+res_age_mujer,datosGEIH_P4)
 stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 
-#intento 3 de merge
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1315,6 +1215,7 @@ print(paste0("El modelo con el menor MSE es el # ",
 
 stargazer(modelos_P5[[which.min(MSE_modelos[,2])]],type="text")
 
+                      
 #5.3. Identificación de outliers - Cálculo de Leverage ----
 
 # v. For the model with the lowest average prediction error, compute the
@@ -1379,19 +1280,9 @@ head(leverage)
 tail(leverage)
 
 #La medida de Leverage es relativa.
-#¿Cómo determinar qué tanto pesan en la regresión?
-#¿Cómo saber si es muy grande o no?
-#Inquietud más conceptual, pendiente por resolver
-
-#LUCAS:
-# "Pueden hacer una matriz 2 x 2 donde tengan u_j alto vs u_j bajo en las
-# columnas y en las filas h_j bajo y alto. Ahi podrian clasificar cada alpha_j
-# en un cuadrante para pensar si las observaciones son outliers, con influencia
-# alta o baja, etc"
 
 
-
-#Guardamos en un nuevo df ingreso y edad de los 100 ingresos más altos de Test
+#Guardamos en un nuevo df ingreso y edad de los 50 ingresos más altos de Test
 pot_outliers <- test[leverage[1:50,1],c("ingtot","age")]
 
 #Una opción mejor es tal vez agregar una nueva columna al df:
@@ -1399,7 +1290,7 @@ pot_outliers <- test[leverage[1:50,1],c("ingtot","age")]
 test$pot_outliers <- 0
 test$pot_outliers_rank <- 0
 
-#Marcar los primeros 100 con un 1.
+#Marcar los primeros 50 con un 1.
 test[leverage[1:50,1],"pot_outliers"] <- 1
 
 #También se puede guardar el "ranking" en la misma matriz de test
@@ -1407,12 +1298,12 @@ test[leverage[1:nrow(leverage),1],"pot_outliers_rank"] <- 1:nrow(leverage)
 
 
 
-#Graficamos los 100 potenciales outliers en rojo:
+#Graficamos los 50 potenciales outliers en rojo:
 
 ggplot() + 
   geom_point(data=test,aes(x=age,y=ingtot),color='black') +
-  geom_point(data=pot_outliers,aes(x=age,y=ingtot),color='red')
-
+  geom_point(data=pot_outliers,aes(x=age,y=ingtot),color='red') +
+  labs(x='Edad', y='Ingreso estimado', title='Edad vs. ingreso estimado')
 
 
 #5.4. Cross-validation, K-fold, K=10 ----
@@ -1504,6 +1395,7 @@ colnames(loocv_mat) <- c("Y_k_observado","Y_k_predicho","Diferencia_^2")
 #Antes de hacer el bucle, guardamos los Y observados:
 loocv_mat[,1] <-  datosGEIH_P5$ingtot
 
+                      
 #Bucle calculando las regresiones y las predicciones de LOOCV:
 
 for (k in 1:nrow(datosGEIH_P5)){
@@ -1545,8 +1437,11 @@ loocv_mse #MSE con LOOCV
 #Comparación del MSE con LOOCV y con K-fold CV:
 (abs(loocv_mse-MSE_modelos[which.min(MSE_modelos[,3]),3])/loocv_mse)*100
 
-#El procedimiento de LOOCV se demoró aproximadamente 30 minutos.
+#El procedimiento de LOOCV se demoró aproximadamente 30 minutos para un modelo sencillo.
 #El de K-fold, es menos de 10 segundos.
 #El porcentaje de error entre uno y otro es de 0,33%.
 #No se justifica el LOOCV por lo intensivo en cómputo.
 
+                      
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
