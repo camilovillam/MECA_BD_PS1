@@ -788,7 +788,7 @@ set.seed(00)
 results <- boot(data = Datos_P3, eta_mod.fn, R = 1000)
 results
 
-##INTERVALOS DE CONFIANZA
+##INTERVALOS DE CONFIANZA, al 95% para peak de la variable age  CI=[coef−1.96×SE,coef+1.96×SE]
 
 IC_inf <- peak_age_a - 1.96*5.790346
 IC_sup <- peak_age_a + 1.96*5.790346
