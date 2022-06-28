@@ -8,10 +8,9 @@ Bienvenido al repositorio del `Problem Set 1` del Grupo 12, resuelto por:
 - Ingrid Lorena Molano
 - Camilo Villa Moreno
 
-## Estructura del repositorio:
-
-...
-
 ## Comentarios sobre la solución del taller:
 
-...
+- En la carpeta Script (del main branch) se encuentra el código comentado con la solución.
+
+
+Última edición: 27/06/2022
