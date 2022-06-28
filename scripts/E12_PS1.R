@@ -674,7 +674,8 @@ stargazer(reg_completa,type="text")
 # Punto 3: modelo ingresos por edad ---------------------------------------
 ##prueba para iniciar
 
-#Se instalan los paquetes que pueden utlizarse durante el ejercicio
+
+#Se instalan los paquetes que puedan utlizarse durante el ejercicio
 install.packages("pacman")
 
 require(pacman)
@@ -682,79 +683,109 @@ p_load(rio,
        tidyverse, 
        skimr, 
        caret,
-       rvest)
-##en este paso se carga la base de datos
-GIH<- import("https://gitlab.com/Lectures-R/bd-meca-2022-summer/lecture-01/-/raw/main/data/GEIH_sample1.Rds")
-browseURL("https://ignaciomsarmiento.github.io/GEIH2018_sample/dictionary.html")
+       rvest,
+       stargazer)
+##en este paso se carga la base de datos una vez limpiada y con las variables seleccionadas de interés
+setwd("/Users/jorgeeduardogarcia/Desktop/BIG_DATA/MECA_BD_PS1")
 
-##ahora se hace una descripción del contenido de la base de datos y de la variable y_inglab (ingreso laboral mensual, incluidos propinas y comisiones) 
-summary("y_ingLab_m, na.rm=T")
-summary(GIH$y_ingLab_m)
+Datos_P3<-readRDS("./stores/datosGEIH_P2.rds")
 
-##resultado: (se pone una parcial, mientras se hace el punto 2) la variable ing:lab cuenta con un mínimo de 40.000 y un valor máximo de ingreso de 40.000.000. 
-#De igual manera, cuenta con una mediana de 983140; es decir, es el valor que se encuentra en la mitad de los datos muestrales. Además, se cuenta conuna media de 1547069; es decir, una persona
-#en promedio gana 1547069 en Colombia. 
+##ahora se realiza una descripción (en el documento) de la variable de interés "ingtot"
+summary(Datos_P3$ingtot)
+sum<-summary(Datos_P3$ingtot)
+
+##Ahora se exporta la tabla a un documento (doc)
+attach(Datos_P3)
+summary(ingtot)
+Sum<-summary(ingtot)
+capture.output(Sum, file="Sumario.doc")
+
+ 
 
 ##se crea una nueva variable, sin eliminar las demás, llamada age2, que corresponde a la variable edad elevada al cuadrado.
-#Es importante aclarar que esta variable se convierte en exponencial para explicar el comportamiento del ingreso respecto de la edad; es decir,
-#de acuerdo con la teoría económica laboral, una persona en la medida en que crece, adquiere no solo otros estudios académicos, sino una experiencia laboral, lo que le permite obtener un mayor ingreso con el paso del tiempo.
-#Sin embargo, llega un punto (forma cóncava) donde la persona deja de ser menos productiva dada la edad.
-GIH<-GIH %>% mutate (age2= age*age)
+
+Datos_P3<-Datos_P3 %>% mutate (age2= age*age)
 age2
 #Otra forma de crear la variable al cuadrado.
-a<-age^2
+age2<-age^2
 
-##**Antes de hacer la regresión, poner la explicación de la variable ingreso utilizada y poneranálisis del modelo
-##Ahora se hace la regresión, donde y=ingreso laboral mensual y x=edad+edad^2. Luego se hace 
-reg_1<-lm(y_ingLab_m~age+age2,GIH)
-summary(reg1)
+##
+##Ahora se hace la regresión, donde y=ingreso laboral mensual y x=edad+edad^2.
+reg_1<-lm(ingtot~age+age2,Datos_P3)
+summary(reg_1)
+#Ahora exportamos la regresión
+stargazer(reg_1, type="text", out="regresion.htm")
+
+#Ahora crea un ggplot para ver el coportamiento del ingreso entre el mercado formal e informal
+ggplot(data = Datos_P3 , 
+       mapping = aes(x = age , y = ingtot , group=as.factor(formal) , color=as.factor(formal))) +
+  geom_point() + 
+  labs(x="edad", y="ingreso total", title="Distribución de Ingreso para el mercado formal e informal")
 
 ##Ahora se trae la librería tidiverse para hacer el plot de la predicción edad-ingreso
 require("tidiverse")
-GIH<-data.frame(age=runif(30,18,80))
-GIH<- GIH %>% mutate(age2=age^2,
-                     y_ingLab_m=rnorm(30,mean=12+0.06*age-0.001*age2))                
-reg_1<-lm(y_ingLab_m~age+age2,GIH)
-ggplot(GIH , mapping = aes(x = age , y = predict(reg_1))) +
-  geom_point(col = "red" , size = 0.5)
 
-#otra opción
-ggplot(GIH, aes(x=age, y=predict(reg_1)))+geom_point() 
-+ labs(x="y_ingLab_m",y="edad", title="grafico")+geom_point(col="red", size=0.5)
+Datos_P3<- Datos_P3 %>% mutate(age2=age^2,
+                    ingtot=rnorm(30,mean=12+0.06*age-0.001*age2))                
+reg_1<-lm(ingtot~age+age2,Datos_P3)
+ggplot(Datos_P3 , mapping = aes(x = age , y = predict(reg_1))) +
+  geom_point(col = "red" , size = 0.8)
+
+##Otra forma de hacer el plot
+ggplot(Datos_P3, aes(x=age, y=predict(reg_1))) + 
+  geom_point() +
+  labs(x='Edad', y='ingreso estimado', title='Edad vs. ingreso estimado')
+
+#otra opción de hacer el plot
+ggplot(Datos_P3, aes(x=age, y=predict(reg_1)))+geom_point() 
++ labs(x="ingtot",y="edad", title="grafico")+geom_point(col="red", size=0.5)
 +geom_smooth(method="lm")
 
-#########
 
+#########
+ #Se instala bootstrap p
 install.packages("boot", dep=TRUE)
 library(boot)
 
-plot(hist(eta_reg1))
-mean(eta_reg1)
+#se asignan los coeficientes para hallar el máximo
 reg_1
 coefs<-reg_1$coef
 coefs
-b0<-coefs[0]
 b1<-coefs[1]
 b2<-coefs[2]
+b3<-coefs[3]
 
-peak_age_a<-b1/2*(b2)
+#se halla el máximo de salario respecto de la edad
+peak_age_a<--b2/(2*b3)
 peak_age_a
 
-results<-boot(GIH, peak_age_a, R=1000)
-
-eta_mod_f<-function(GIH,index,
-                    age_bar=mean(GIH$age)
-                    age2_bar=mean(GIH$age2)){
-  f<-lm(y_ingLab_m~age+age2,GIH,subset=index)
-  coefs<-f$coefficients
-  b2<-coefs[2]
-  b3<-coefs[3]
-  elastpt<-b2+2*b3*age_bar+b3*age2_bar
-  return(elastpt)
+#se hace el bootstrap para calcular los errores estándar
+eta_mod.fn <- function(data, index){
+  f <- lm(ingtot~age + age2, data, subset = index)
+  
+  coefs <- f$coef
+  
+  b2 <- coefs[2]
+  b3 <- coefs[3]
+  
+  peak_age <- -b2/(2*b3)
+  return(peak_age)
 }
+##Ahora se muestran los resultados de la función de las líneas anteriores
+n<- nrow(Datos_P3)
+eta_mod.fn(Datos_P3, 1:n)
 
-eta_mod_f(GIH, 1:n)
+set.seed(00)
+results <- boot(data = Datos_P3, eta_mod.fn, R = 1000)
+results
 
+##INTERVALOS DE CONFIANZA, al 95% para peak de la variable age  CI=[coef−1.96×SE,coef+1.96×SE]
+
+IC_inf <- peak_age_a - 1.96*5.790346
+IC_sup <- peak_age_a + 1.96*5.790346
+
+IC_inf
+IC_sup
 
 # Punto 4: modelo brecha de ingresos --------------------------------------
 
