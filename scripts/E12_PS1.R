@@ -959,10 +959,8 @@ stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#
 # PUNTO 5: MODELO DE PREDICCIÓN DE INGRESOS -------------------------------
-#
-##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #5.0. Cargar base de datos ----
 
@@ -970,9 +968,10 @@ stargazer(regP4_5,regP4_6,type="text",keep=c("mujer","res_mujer"))
 setwd("~/GitHub/MECA_BD_PS1")
 datosGEIH_P5 <-readRDS("./stores/datosGEIH_P2.rds")
 
-#datosGEIH_P5 <- datosGEIH_P2
+datosGEIH_P5 <- datosGEIH_P2
 
-#Se crea la variable mujer (luego se arregla)
+
+#Se crea la variable mujer
 
 datosGEIH_P5 <- datosGEIH_P5 %>%
   mutate(mujer = case_when(
@@ -980,59 +979,9 @@ datosGEIH_P5 <- datosGEIH_P5 %>%
     sex == 'Hombre' ~ 0
   ))
 
-#Se crea una variable de interacción entre la edad y la variable dicotoma mujer
-datosGEIH_P5 <- datosGEIH_P5 %>% mutate(mujer_age = age*mujer)
+datosGEIH_P5$mujer <- as.factor(datosGEIH_P5$mujer)
 
-datosGEIH_P5$ln_ing <- log(datosGEIH_P5$ingtot)
-
-datosGEIH_P5 <- datosGEIH_P5[is.finite(datosGEIH_P5$ln_ing), ]
-
-#Ensayo previo:
-
-regP4_5p3<-lm(ln_ing~mujer+
-                age+
-                age_cuad+
-                mujer_age+
-                años_educ+
-                años_educ_cuad+
-                factor(oficio)+
-                exp_pot_cuad +
-                sizeFirm+ 
-                totalHoursWorked+
-                formal
-              , data=datosGEIH_P5)
-
-summary(regP4_5p3)
-
-stargazer(regP4_5p3,type="text")
-
-regP4_5p4b<-lm(ingtot~mujer+
-                age+
-                age_cuad+
-                mujer_age+
-                años_educ+
-                años_educ_cuad+
-                factor(oficio)+
-                exp_pot_cuad +
-                sizeFirm+ 
-                totalHoursWorked+
-                formal
-              , data=datosGEIH_P5)
-
-require(stargazer)
-stargazer(regP4_5p4b,regP4_5p3,type="text")
-
-#Haré todo el ejercicio con los dos modelos anteriores para comparar qué pasa y
-#cómo se hace
-
-
-
- 
-# nrow(datosGEIH_P5)
-# datosGEIH_P5 <- subset(datosGEIH_P5, !is.na(ingtot))
-# nrow(datosGEIH_P5)
-
-# datosGEIH_P5$ln_ing <- log(datosGEIH_P5$ingtot)
+nrow(datosGEIH_P5)
 
 
 # Enunciado:
@@ -1056,8 +1005,9 @@ datosGEIH_P5 <- datosGEIH_P5 %>%
 summary(datosGEIH_P5$test_dataset)
 mean(datosGEIH_P5$test_dataset)
 
-#Tabla comparativa de ambos grupos (revisar, incluir vars)
-CreateTableOne(data=datosGEIH_P5,strata="test_dataset")
+#Tabla comparativa de ambos grupos
+CreateTableOne(data=datosGEIH_P5,strata="test_dataset",
+               vars=c("ingtot","age","mujer","años_educ","formal","totalHoursWorked","exper_pot","num_hijos","p6426"))
 
 test <- datosGEIH_P5[datosGEIH_P5$test_dataset==T,]
 training <- datosGEIH_P5[datosGEIH_P5$test_dataset==F,]
@@ -1089,70 +1039,10 @@ test$model5_1 <- predict(modelos_P5[[1]],newdata = test)
 #para compararlos al final.
 
 MSE_modelos <- matrix(rep(0,45),nrow=15,ncol=3)
-colnames(MSE_modelos) <- c("Modelo","MSE","MSE_CV_5-fold")
+colnames(MSE_modelos) <- c("Modelo","MSE","MSE_10-fold CV")
 
 MSE_modelos[1,1]=1
 MSE_modelos[1,2] <- with(test,mean((ingtot-model5_1)^2))
-
-#ENSAYO: CON EL MODELO LOGARÍTIMICO
-
-modelos_P5[[2]] <- lm(ingtot ~ age,data=training)
-
-modelos_P5[[3]]<-lm(ln_ing~mujer+
-                age+
-                age_cuad+
-                mujer_age+
-                años_educ+
-                años_educ_cuad+
-                exp_pot_cuad +
-                sizeFirm+ 
-                totalHoursWorked+
-                formal
-              , data=training)
-
-
-modelos_P5[[4]]<-lm(ingtot ~mujer+
-                age+
-                age_cuad+
-                mujer_age+
-                años_educ+
-                años_educ_cuad+
-                exp_pot_cuad +
-                sizeFirm+ 
-                totalHoursWorked+
-                formal
-              , data=training)
-
-stargazer(modelos_P5[[3]],modelos_P5[[4]],type="text")
-
-for(i in 3:4){
-  #Predicción:
-  test[[paste0("model5_",i)]] <- predict(modelos_P5[[i]],newdata = test)
-  
-  #Cálculo del MSE:
-  MSE_modelos[i,1] <- i
-  MSE_modelos[i,2] <- 
-    with(test,mean((ingtot - eval(as.name(paste0("model5_",i))))^2))
-}
-
-#Para el logaritmo (modelo 3):
-
-#Predicción:
-test$model5_3 <- predict(modelos_P5[[3]],newdata = test)
-
-#Cálculo del MSE:
-MSE_modelos[3,1] <- 3
-MSE_modelos[3,2] <- 
-  with(test,mean((ingtot - exp(eval(as.name(paste0("model5_",3)))))^2))
-
-mean(test$ingtot)
-mean(test$model5_3)
-exp(mean(test$model5_3))
-mean(test$model5_4)
-
-mean((test$ingtot - test$model5_4)^2)
-MSE_modelos[4,2]
-
 
 
 # ii. Estimate again your previous models.
@@ -1267,34 +1157,26 @@ modelos_P5[[13]] <- lm(ingtot ~
                          age:num_hijos,
                        data=training)
 
-#Modelo con todas las variables, polinomios grados 2, 3 y 4
+#Modelo con todas las variables, interacciones y polinomios grados 3 y 4
 modelos_P5[[14]] <- lm(ingtot ~ 
-                         age +
-                         age_cuad +
+                         age:mujer +
                          poly(age,3) + 
                          poly(age,4) +
-                         mujer +
-                         años_educ +
-                         años_educ_cuad +
+                         años_educ:mujer +
                          poly(años_educ,3) +
                          poly(años_educ,4) +
-                         exper_pot +
-                         exp_pot_cuad +
+                         exper_pot:mujer +
                          poly(exper_pot,3) +
                          poly(exper_pot,4) +
-                         oficio +
-                         sizeFirm +
-                         formal +
-                         totalHoursWorked +
-                         poly(totalHoursWorked,2) +
+                         oficio:mujer +
+                         sizeFirm:mujer +
+                         formal:mujer +
                          poly(totalHoursWorked,3) +
                          poly(totalHoursWorked,4) +
-                         p6426 +
-                         poly(p6426,2) +
+                         p6426:mujer +
                          poly(p6426,3) +
                          poly(p6426,4) +
-                         num_hijos+
-                         poly(num_hijos,2) +
+                         num_hijos:mujer +
                          poly(num_hijos,3),
                        data=training)
 
@@ -1354,6 +1236,7 @@ print(paste0("El modelo con el menor MSE es el # ",
 
 stargazer(modelos_P5[[which.min(MSE_modelos[,2])]],type="text")
 
+#5.3. Identificación de outliers - Cálculo de Leverage ----
 
 # v. For the model with the lowest average prediction error, compute the
 # leverage statistic for each observation in the test sample. Are there any
@@ -1430,7 +1313,7 @@ tail(leverage)
 
 
 #Guardamos en un nuevo df ingreso y edad de los 100 ingresos más altos de Test
-pot_outliers <- test[leverage[1:100,1],c("ingtot","age")]
+pot_outliers <- test[leverage[1:50,1],c("ingtot","age")]
 
 #Una opción mejor es tal vez agregar una nueva columna al df:
 
@@ -1438,7 +1321,7 @@ test$pot_outliers <- 0
 test$pot_outliers_rank <- 0
 
 #Marcar los primeros 100 con un 1.
-test[leverage[1:100,1],"pot_outliers"] <- 1
+test[leverage[1:50,1],"pot_outliers"] <- 1
 
 #También se puede guardar el "ranking" en la misma matriz de test
 test[leverage[1:nrow(leverage),1],"pot_outliers_rank"] <- 1:nrow(leverage)
@@ -1452,6 +1335,8 @@ ggplot() +
   geom_point(data=pot_outliers,aes(x=age,y=ingtot),color='red')
 
 
+
+#5.4. Cross-validation, K-fold, K=10 ----
 
 #b. Repeat the previous point but use K-fold cross-validation.
 #Comment on similarities/differences of using this approach
@@ -1469,7 +1354,7 @@ modelos_CVK_P5 <- vector("list",15)
 
 modelos_CVK_P5[[1]] <- train(ingtot ~ .,
                      data = datosGEIH_P5,
-                     trControl = trainControl(method = "cv", number = 5),
+                     trControl = trainControl(method = "cv", number = 10),
                      method = "null")
 
 MSE_modelos[1,3] <- modelos_CVK_P5[[1]]$results$RMSE^2
@@ -1485,7 +1370,7 @@ for (l in 2:length(modelos_P5)){
   #Se calcula el modelo con Cross validation:
   modelos_CVK_P5[[l]] <- train(form_modelo,
                                data = datosGEIH_P5,
-                               trControl = trainControl(method = "cv", number = 5),
+                               trControl = trainControl(method = "cv", number = 10),
                                method = "lm")
   
   #Se guarda el MSE en la tabla (se debe elevar porque en esta
@@ -1515,6 +1400,8 @@ form_modelo_lowest_MSE_KFCV <-
   eval(modelos_P5[[which.min(MSE_modelos[,3])]]$call$formula)
 
 
+#5.5. Leave one out cross-validation (LOOCV) ----
+
 #c. LOOCV. With your preferred predicted model (the one with the lowest
 # average prediction error) perform the following exercise:
 # 
@@ -1527,8 +1414,7 @@ form_modelo_lowest_MSE_KFCV <-
 #   step to get the average mean square error. This is known as the Leave-One-Out
 #   Cross-Validation (LOOCV) statistic.
 # 
-# ii. Compare the results to those obtained in the computation of the
-# leverage statistic
+
 
 
 #Inicializamos una matriz vacía para guardar los MSE de LOOCV:
@@ -1561,31 +1447,26 @@ loocv_mse <- mean(loocv_mat[1:nrow(datosGEIH_P5),4])
 loocv_mse
 
 
+# ii. Compare the results to those obtained in the computation of the
+# leverage statistic
+
 #Comparación de resultados:
 
-#QUÉ PRESENTACIÓN PUEDO HACER AQUÍ?
-#Stargazer
+#Se compara el MSE del K-Fold con el del LOOCV y la partición inicial
 
-MSE_modelos[1,2] #Modelo simple
-MSE_modelos[2,2] #Modelo N
-MSE_modelos[2,3] #MSE K-fold, K=5
-loocv_mse #MSE con LOOCV
+#Modelo con menor MSE
+which.min(MSE_modelos[,2]) #Con la partición 70/30
+which.min(MSE_modelos[,3]) #Con K-fold CV
 
-#El enunciado me pide comparar con las estadísticas de Leverage, pero
-# no tengo claro qué se puede comparar con los leverage.
-#¿Será un error en el enunciado?
-#¿O realmente es algo que deba calcularse?
+#MSE del modelo con menor MSE
+MSE_modelos[which.min(MSE_modelos[,2]),2] #Con la partición 70/30
+MSE_modelos[which.min(MSE_modelos[,3]),3] #K-fold CV
+loocv_mse #MSE con LOOCV 
 
-#Lo que sí se me ocurre comparar es el MSE del K-Fold con el del LOOCV y los
-#demás modelos
+#Comparación del MSE con LOOCV y con K-fold CV:
+(abs(loocv_mse-MSE_modelos[which.min(MSE_modelos[,3]),3])/loocv_mse)*100
 
-
-MSE_modelos[2,3] #MSE K-fold, K=5
-loocv_mse #MSE con LOOCV
-
-(abs(MSE_modelos[2,3]-loocv_mse)/loocv_mse)*100
-
-#El procedimiento de LOOCV se demoró aproximadamente XXXX minutos.
+#El procedimiento de LOOCV se demoró aproximadamente 30 minutos.
 #El de K-fold, es menos de 10 segundos.
 #El porcentaje de error entre uno y otro es de 0,33%.
 #No se justifica el LOOCV por lo intensivo en cómputo.
