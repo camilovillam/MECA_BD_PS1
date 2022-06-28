@@ -731,6 +731,12 @@ summary(reg_3)
 stargazer(reg_2,reg_3, type="text", out="regresion_2_3.htm")
 
 
+#Ahora crea un ggplot para ver el coportamiento del ingreso entre el mercado formal e informal
+ggplot(data = Datos_P3 , 
+       mapping = aes(x = age , y = ingtot , group=as.factor(formal) , color=as.factor(formal))) +
+  geom_point() + 
+  labs(x="edad", y="ingreso total", title="Distribución de Ingreso para el mercado formal e informal")
+
 ##Ahora se trae la librería tidiverse para hacer el plot de la predicción edad-ingreso
 require("tidiverse")
 
