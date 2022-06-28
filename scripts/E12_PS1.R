@@ -716,21 +716,6 @@ summary(reg_1)
 #Ahora exportamos la regresión
 stargazer(reg_1, type="text", out="regresion.htm")
 
-#Ahora creamos la variable formal e informal para luego correr las regresiones enfocadas en cada segmento
-
-Datos_P3<-Datos_P3 %>% mutate(formal=relevel (formal, ref="Formal"))
-
-#Regresión_2 En esta solo queremos ver el comportamiento del ingreso cuando el empleado está vinculado formalmente
-reg_2<-lm(ingtot~age+age2+formal,Datos_P3)
-summary(reg_2)
-
-#Regresión_3 En esta solo queremos ver el comportamiento del ingreso cuando el empleado es informal
-Datos_P3<-Datos_P3 %>% mutate(formal=relevel (formal, ref="Informal"))
-reg_3<-lm(ingtot~age+age2+formal,Datos_P3)
-summary(reg_3)
-stargazer(reg_2,reg_3, type="text", out="regresion_2_3.htm")
-
-
 #Ahora crea un ggplot para ver el coportamiento del ingreso entre el mercado formal e informal
 ggplot(data = Datos_P3 , 
        mapping = aes(x = age , y = ingtot , group=as.factor(formal) , color=as.factor(formal))) +
